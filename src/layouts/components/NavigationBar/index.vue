@@ -28,6 +28,11 @@ const toggleSidebar = () => {
   appStore.toggleSidebar(false)
 }
 
+/* 修改个人信息 */
+const updateUserInfo = () => {
+  router.push("/userUpdater")
+}
+
 /** 登出 */
 const logout = () => {
   userStore.logout()
@@ -57,12 +62,9 @@ const logout = () => {
         </div>
         <template #dropdown>
           <el-dropdown-menu>
-            <a target="_blank" href="https://github.com/un-pany/v3-admin-vite">
-              <el-dropdown-item>GitHub</el-dropdown-item>
-            </a>
-            <a target="_blank" href="https://gitee.com/un-pany/v3-admin-vite">
-              <el-dropdown-item>Gitee</el-dropdown-item>
-            </a>
+            <el-dropdown-item divided @click="updateUserInfo">
+              <span style="display: block">修改资料</span>
+            </el-dropdown-item>
             <el-dropdown-item divided @click="logout">
               <span style="display: block">退出登录</span>
             </el-dropdown-item>

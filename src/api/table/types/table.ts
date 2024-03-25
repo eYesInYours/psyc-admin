@@ -6,13 +6,14 @@ export interface CreateOrUpdateTableRequestData {
 
 export interface GetTableRequestData {
   /** 当前页码 */
-  currentPage: number
+  pageNum: number
   /** 查询条数 */
-  size: number
+  pageSize: number
   /** 查询参数：用户名 */
   username?: string
   /** 查询参数：手机号 */
   phone?: string
+  type?: string
 }
 
 export interface GetTableData {

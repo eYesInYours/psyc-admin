@@ -24,7 +24,8 @@ const codeUrl = ref("")
 const loginFormData: LoginRequestData = reactive({
   username: "admin",
   password: "12345678",
-  code: ""
+  code: "",
+  type: "STUDENT"
 })
 /** 登录表单校验规则 */
 const loginFormRules: FormRules = {
@@ -46,7 +47,7 @@ const handleLogin = () => {
           router.push({ path: "/" })
         })
         .catch(() => {
-          createCode()
+          // createCode()
           loginFormData.password = ""
         })
         .finally(() => {
@@ -60,7 +61,7 @@ const handleLogin = () => {
 /** 创建验证码 */
 const createCode = () => {
   // 先清空验证码的输入
-  loginFormData.code = ""
+  // loginFormData.code = ""
   // 获取验证码
   codeUrl.value = ""
   getLoginCodeApi().then((res) => {
@@ -69,7 +70,7 @@ const createCode = () => {
 }
 
 /** 初始化验证码 */
-createCode()
+// createCode()
 </script>
 
 <template>
@@ -105,7 +106,15 @@ createCode()
               @focus="handleFocus"
             />
           </el-form-item>
-          <el-form-item prop="code">
+          <el-form-item prop="type">
+            <el-radio-group v-model="loginFormData.type" class="ml-4">
+              <el-radio value="STUDENT" size="small">学生</el-radio>
+              <el-radio value="TEACHER" size="small">教师</el-radio>
+              <el-radio value="ADMIN" size="small">管理员</el-radio>
+            </el-radio-group>
+          </el-form-item>
+          <!--
+            <el-form-item prop="code">
             <el-input
               v-model.trim="loginFormData.code"
               placeholder="验证码"
@@ -131,6 +140,7 @@ createCode()
               </template>
             </el-input>
           </el-form-item>
+           -->
           <el-button :loading="loading" type="primary" size="large" @click.prevent="handleLogin">登 录</el-button>
         </el-form>
       </div>

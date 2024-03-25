@@ -9,7 +9,7 @@ import { cloneDeep } from "lodash-es"
 
 defineOptions({
   // 命名当前组件
-  name: "ElementPlus"
+  name: "UserManage"
 })
 
 const loading = ref<boolean>(false)
@@ -75,17 +75,33 @@ const handleUpdate = (row: GetTableData) => {
 //#region 查
 const tableData = ref<GetTableData[]>([])
 const searchFormRef = ref<FormInstance | null>(null)
+const userTypes = [
+  {
+    label: "学生",
+    value: "STUDENT"
+  },
+  {
+    label: "教师",
+    value: "TEACHER"
+  },
+  {
+    label: "管理员",
+    value: "ADMIN"
+  }
+]
 const searchData = reactive({
   username: "",
-  phone: ""
+  phone: "",
+  type: ""
 })
 const getTableData = () => {
   loading.value = true
   getTableDataApi({
-    currentPage: paginationData.currentPage,
-    size: paginationData.pageSize,
+    pageNum: paginationData.currentPage,
+    pageSize: paginationData.pageSize,
     username: searchData.username || undefined,
-    phone: searchData.phone || undefined
+    phone: searchData.phone || undefined,
+    type: searchData.type || undefined
   })
     .then(({ data }) => {
       paginationData.total = data.total
@@ -121,6 +137,11 @@ watch([() => paginationData.currentPage, () => paginationData.pageSize], getTabl
         <el-form-item prop="phone" label="手机号">
           <el-input v-model="searchData.phone" placeholder="请输入" />
         </el-form-item>
+        <el-form-item prop="type" label="用户类型">
+          <el-select v-model="searchData.type" placeholder="请选择" style="width: 240px">
+            <el-option v-for="item in userTypes" :key="item.value" :label="item.label" :value="item.value" />
+          </el-select>
+        </el-form-item>
         <el-form-item>
           <el-button type="primary" :icon="Search" @click="handleSearch">查询</el-button>
           <el-button :icon="Refresh" @click="resetSearch">重置</el-button>
@@ -145,22 +166,18 @@ watch([() => paginationData.currentPage, () => paginationData.pageSize], getTabl
       <div class="table-wrapper">
         <el-table :data="tableData">
           <el-table-column type="selection" width="50" align="center" />
-          <el-table-column prop="username" label="用户名" align="center" />
-          <el-table-column prop="roles" label="角色" align="center">
+          <el-table-column prop="username" label="账号" align="center" />
+          <el-table-column prop="nickname" label="昵称" align="center" />
+          <el-table-column prop="type" label="角色" align="center">
             <template #default="scope">
-              <el-tag v-if="scope.row.roles === 'admin'" effect="plain">admin</el-tag>
-              <el-tag v-else type="warning" effect="plain">{{ scope.row.roles }}</el-tag>
+              <el-tag v-if="scope.row.type === 'ADMIN'" type="danger" effect="plain">管理员</el-tag>
+              <el-tag v-else-if="scope.row.type === 'TEACHER'" type="warning" effect="plain">教师</el-tag>
+              <el-tag v-else-if="scope.row.type === 'STUDENT'" type="info" effect="plain">学生</el-tag>
             </template>
           </el-table-column>
           <el-table-column prop="phone" label="手机号" align="center" />
-          <el-table-column prop="email" label="邮箱" align="center" />
-          <el-table-column prop="status" label="状态" align="center">
-            <template #default="scope">
-              <el-tag v-if="scope.row.status" type="success" effect="plain">启用</el-tag>
-              <el-tag v-else type="danger" effect="plain">禁用</el-tag>
-            </template>
-          </el-table-column>
           <el-table-column prop="createTime" label="创建时间" align="center" />
+          <el-table-column prop="updateTime" label="更新时间" align="center" />
           <el-table-column fixed="right" label="操作" width="150" align="center">
             <template #default="scope">
               <el-button type="primary" text bg size="small" @click="handleUpdate(scope.row)">修改</el-button>

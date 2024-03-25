@@ -45,6 +45,13 @@ export const constantRoutes: RouteRecordRaw[] = [
     }
   },
   {
+    path: "/userUpdater",
+    component: () => import("@/views/user/updater.vue"),
+    meta: {
+      hidden: true
+    }
+  },
+  {
     path: "/",
     component: Layouts,
     redirect: "/dashboard",
@@ -103,21 +110,21 @@ export const constantRoutes: RouteRecordRaw[] = [
     ]
   },
   {
-    path: "/table",
+    path: "/admin",
     component: Layouts,
-    redirect: "/table/element-plus",
-    name: "Table",
+    redirect: "/admin/element-plus",
+    name: "Admin",
     meta: {
-      title: "表格",
+      title: "管理模块",
       elIcon: "Grid"
     },
     children: [
       {
-        path: "element-plus",
-        component: () => import("@/views/table/element-plus/index.vue"),
-        name: "ElementPlus",
+        path: "user-manage",
+        component: () => import("@/views/table/user-manage/index.vue"),
+        name: "user-mangage",
         meta: {
-          title: "Element Plus",
+          title: "用户管理",
           keepAlive: true
         }
       },
@@ -264,7 +271,7 @@ export const dynamicRoutes: RouteRecordRaw[] = [
     meta: {
       title: "权限",
       svgIcon: "lock",
-      roles: ["admin", "editor"], // 可以在根路由中设置角色
+      roles: ["ADMIN", "editor"], // 可以在根路由中设置角色
       alwaysShow: true // 将始终显示根菜单
     },
     children: [
@@ -274,7 +281,7 @@ export const dynamicRoutes: RouteRecordRaw[] = [
         name: "PagePermission",
         meta: {
           title: "页面级",
-          roles: ["admin"] // 或者在子导航中设置角色
+          roles: ["ADMIN"] // 或者在子导航中设置角色
         }
       },
       {

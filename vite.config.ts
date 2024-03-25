@@ -14,6 +14,7 @@ export default ({ mode }: ConfigEnv): UserConfigExport => {
   const { VITE_PUBLIC_PATH } = viteEnv
   return {
     /** 打包时根据实际情况修改 base */
+    // VITE_PUBLIC_PATH
     base: VITE_PUBLIC_PATH,
     resolve: {
       alias: {
@@ -25,7 +26,7 @@ export default ({ mode }: ConfigEnv): UserConfigExport => {
       /** 设置 host: true 才可以使用 Network 的形式，以 IP 访问项目 */
       host: true, // host: "0.0.0.0"
       /** 端口号 */
-      port: 3333,
+      port: 8000,
       /** 是否自动打开浏览器 */
       open: false,
       /** 跨域设置允许 */
@@ -33,14 +34,16 @@ export default ({ mode }: ConfigEnv): UserConfigExport => {
       /** 端口被占用时，是否直接退出 */
       strictPort: false,
       /** 接口代理 */
-      proxy: {
-        "/api/v1": {
-          target: "https://mock.mengxuegu.com/mock/63218b5fb4c53348ed2bc212",
-          ws: true,
-          /** 是否允许跨域 */
-          changeOrigin: true
-        }
-      },
+      // proxy: {
+      //   // /api/v1
+      //   "/api/v1": {
+      //     // target: "https://mock.mengxuegu.com/mock/63218b5fb4c53348ed2bc212",
+      //     target: "",
+      //     ws: true,
+      //     /** 是否允许跨域 */
+      //     changeOrigin: true
+      //   }
+      // },
       /** 预热常用文件，提高初始页面加载速度 */
       warmup: {
         clientFiles: ["./src/layouts/**/*.vue"]
