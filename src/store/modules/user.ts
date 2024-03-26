@@ -32,6 +32,7 @@ export const useUserStore = defineStore("user", () => {
   /** 登录 */
   const login = async ({ username, password, type }: LoginRequestData) => {
     const { data } = await loginApi({ username, password, type })
+    console.log("user token", data.token)
     setToken(data.token)
     token.value = data.token
     user.value = data.user

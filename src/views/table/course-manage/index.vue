@@ -1,6 +1,6 @@
 <script lang="ts" setup>
-import { reactive, ref, watch, computed } from "vue"
-import { createTableDataApi, deleteTableDataApi, updateTableDataApi, getTableDataApi } from "@/api/table/classroom"
+import { reactive, ref, watch } from "vue"
+import { createTableDataApi, deleteTableDataApi, updateTableDataApi, getTableDataApi } from "@/api/table/course"
 import { type CreateOrUpdateTableRequestData, type GetTableData } from "@/api/table/types/table"
 import { type FormInstance, type FormRules, ElMessage, ElMessageBox } from "element-plus"
 import { Search, Refresh, CirclePlus, Delete, Download, RefreshRight } from "@element-plus/icons-vue"
@@ -9,7 +9,7 @@ import { cloneDeep } from "lodash-es"
 
 defineOptions({
   // 命名当前组件
-  name: "ClassRoomManage"
+  name: "UserManage"
 })
 
 const loading = ref<boolean>(false)
@@ -19,38 +19,20 @@ const { paginationData, handleCurrentChange, handleSizeChange } = usePagination(
 const DEFAULT_FORM_DATA: CreateOrUpdateTableRequestData = {
   id: undefined,
   location: "",
-  capacity: 0,
-  rooms: []
+  capacity: 0
 }
 const dialogVisible = ref<boolean>(false)
 const formRef = ref<FormInstance | null>(null)
 const formData = ref<CreateOrUpdateTableRequestData>(cloneDeep(DEFAULT_FORM_DATA))
-// 生成computed
-const roomsSelector: any = computed(() =>
-  formData.value.rooms?.map((item: any) => ({
-    value: item,
-    label: item
-  }))
-)
-const selectRooms = ref([])
-const validateRoom = (rule: any, value: any, callback: any) => {
-  if (!selectRooms.value.length) {
-    callback(new Error("请至少添加一个教室"))
-  } else {
-    callback()
-  }
-}
 const formRules: FormRules<CreateOrUpdateTableRequestData> = {
-  location: [{ required: true, trigger: "blur", message: "请输入教学楼" }],
-  capacity: [{ required: true, trigger: "blur", message: "请输入教室容量" }],
-  rooms: [{ required: true, trigger: "blur", validator: validateRoom }]
+  location: [{ required: true, trigger: "blur", message: "请输入教室地点" }],
+  capacity: [{ required: true, trigger: "blur", message: "请输入教室容量" }]
 }
 const handleCreateOrUpdate = () => {
   formRef.value?.validate((valid: boolean, fields) => {
     if (!valid) return console.error("表单校验不通过", fields)
     loading.value = true
     const api = formData.value.id === undefined ? createTableDataApi : updateTableDataApi
-    formData.value.rooms = selectRooms.value
     api(formData.value)
       .then(() => {
         ElMessage.success("操作成功")
@@ -145,7 +127,7 @@ watch([() => paginationData.currentPage, () => paginationData.pageSize], getTabl
   <div class="app-container">
     <el-card v-loading="loading" shadow="never" class="search-wrapper">
       <el-form ref="searchFormRef" :inline="true" :model="searchData">
-        <el-form-item prop="location" label="教学楼">
+        <el-form-item prop="location" label="教室地点">
           <el-input v-model="searchData.location" placeholder="请输入" />
         </el-form-item>
         <el-form-item>
@@ -174,11 +156,6 @@ watch([() => paginationData.currentPage, () => paginationData.pageSize], getTabl
           <el-table-column type="selection" width="50" align="center" />
           <el-table-column prop="id" label="教室ID" align="center" />
           <el-table-column prop="location" label="位置" align="center" />
-          <el-table-column prop="rooms" label="教室" align="center">
-            <template #default="scope">
-              <el-tag type="primary" v-for="(item, index) in scope.row.rooms" :key="index">{{ item }}</el-tag>
-            </template>
-          </el-table-column>
           <el-table-column prop="capacity" label="容纳人数" align="center" />
           <el-table-column prop="createTime" label="创建时间" align="center" />
           <el-table-column prop="updateTime" label="更新时间" align="center" />
@@ -214,21 +191,8 @@ watch([() => paginationData.currentPage, () => paginationData.pageSize], getTabl
         <el-form-item prop="id" label="用户ID">
           <el-input v-model="formData.id" disabled placeholder="自动生成，不用输入" />
         </el-form-item>
-        <el-form-item prop="location" label="教学楼">
+        <el-form-item prop="location" label="教室地点">
           <el-input v-model="formData.location" placeholder="请输入" />
-        </el-form-item>
-        <el-form-item prop="rooms" label="教室">
-          <el-select-v2
-            v-model="formData.rooms"
-            :options="roomsSelector"
-            placeholder="输入后鼠标点击添加"
-            style="width: 240px; margin-right: 16px; vertical-align: middle"
-            allow-create
-            filterable
-            multiple
-            clearable
-            :reserve-keyword="false"
-          />
         </el-form-item>
         <el-form-item prop="capacity" label="容纳人数">
           <el-input show-word-limit type="number" v-model="formData.capacity" placeholder="请输入" />

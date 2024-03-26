@@ -110,36 +110,6 @@ export const constantRoutes: RouteRecordRaw[] = [
     ]
   },
   {
-    path: "/admin",
-    component: Layouts,
-    redirect: "/admin/element-plus",
-    name: "Admin",
-    meta: {
-      title: "管理模块",
-      elIcon: "Grid"
-    },
-    children: [
-      {
-        path: "user-manage",
-        component: () => import("@/views/table/user-manage/index.vue"),
-        name: "user-mangage",
-        meta: {
-          title: "用户管理",
-          keepAlive: true
-        }
-      },
-      {
-        path: "vxe-table",
-        component: () => import("@/views/table/vxe-table/index.vue"),
-        name: "VxeTable",
-        meta: {
-          title: "Vxe Table",
-          keepAlive: true
-        }
-      }
-    ]
-  },
-  {
     path: "/menu",
     component: Layouts,
     redirect: "/menu/menu1",
@@ -263,6 +233,39 @@ export const constantRoutes: RouteRecordRaw[] = [
  * 必须带有 Name 属性
  */
 export const dynamicRoutes: RouteRecordRaw[] = [
+  {
+    path: "/admin",
+    component: Layouts,
+    redirect: "/admin/element-plus",
+    name: "Admin",
+    meta: {
+      title: "管理模块",
+      elIcon: "Grid",
+      roles: ["ADMIN", "TEACHER"]
+    },
+    children: [
+      {
+        path: "user-manage",
+        component: () => import("@/views/table/user-manage/index.vue"),
+        name: "user-mangage",
+        meta: {
+          title: "用户管理",
+          keepAlive: true,
+          roles: ["ADMIN"]
+        }
+      },
+      {
+        path: "classroom",
+        component: () => import("@/views/table/vxe-table/index.vue"),
+        name: "classroom",
+        meta: {
+          title: "教室管理",
+          keepAlive: true,
+          roles: ["ADMIN"]
+        }
+      }
+    ]
+  },
   {
     path: "/permission",
     component: Layouts,

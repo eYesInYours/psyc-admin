@@ -1,7 +1,13 @@
-export interface CreateOrUpdateTableRequestData {
-  id?: string
+import { type User } from "@/api/user/types/user"
+
+export interface CreateOrUpdateTableRequestData extends User {
   username: string
   password?: string
+  phone?: string
+  intro?: string
+  location?: string
+  capacity?: number
+  rooms?: Array<string>
 }
 
 export interface GetTableRequestData {
@@ -14,16 +20,14 @@ export interface GetTableRequestData {
   /** 查询参数：手机号 */
   phone?: string
   type?: string
+  location?: string
 }
 
-export interface GetTableData {
-  createTime: string
-  email: string
-  id: string
-  phone: string
-  roles: string
-  status: boolean
+export interface GetTableData extends User {
   username: string
+  password?: string
+  phone?: string
+  intro?: string
 }
 
 export type GetTableResponseData = ApiResponseData<{

@@ -19,13 +19,16 @@ const { paginationData, handleCurrentChange, handleSizeChange } = usePagination(
 const DEFAULT_FORM_DATA: CreateOrUpdateTableRequestData = {
   id: undefined,
   username: "",
-  password: ""
+  password: "",
+  type: undefined,
+  phone: "",
+  intro: ""
 }
 const dialogVisible = ref<boolean>(false)
 const formRef = ref<FormInstance | null>(null)
 const formData = ref<CreateOrUpdateTableRequestData>(cloneDeep(DEFAULT_FORM_DATA))
 const formRules: FormRules<CreateOrUpdateTableRequestData> = {
-  username: [{ required: true, trigger: "blur", message: "请输入用户名" }],
+  username: [{ required: true, trigger: "blur", message: "请输入账号" }],
   password: [{ required: true, trigger: "blur", message: "请输入密码" }]
 }
 const handleCreateOrUpdate = () => {
@@ -57,7 +60,7 @@ const handleDelete = (row: GetTableData) => {
     cancelButtonText: "取消",
     type: "warning"
   }).then(() => {
-    deleteTableDataApi(row.id).then(() => {
+    deleteTableDataApi(row.id as string).then(() => {
       ElMessage.success("删除成功")
       getTableData()
     })
@@ -152,12 +155,12 @@ watch([() => paginationData.currentPage, () => paginationData.pageSize], getTabl
       <div class="toolbar-wrapper">
         <div>
           <el-button type="primary" :icon="CirclePlus" @click="dialogVisible = true">新增用户</el-button>
-          <el-button type="danger" :icon="Delete">批量删除</el-button>
+          <!-- <el-button type="danger" :icon="Delete">批量删除</el-button> -->
         </div>
         <div>
-          <el-tooltip content="下载">
+          <!-- <el-tooltip content="下载">
             <el-button type="primary" :icon="Download" circle />
-          </el-tooltip>
+          </el-tooltip> -->
           <el-tooltip content="刷新当前页">
             <el-button type="primary" :icon="RefreshRight" circle @click="getTableData" />
           </el-tooltip>
@@ -166,6 +169,7 @@ watch([() => paginationData.currentPage, () => paginationData.pageSize], getTabl
       <div class="table-wrapper">
         <el-table :data="tableData">
           <el-table-column type="selection" width="50" align="center" />
+          <el-table-column prop="id" label="用户ID" align="center" />
           <el-table-column prop="username" label="账号" align="center" />
           <el-table-column prop="nickname" label="昵称" align="center" />
           <el-table-column prop="type" label="角色" align="center">
@@ -173,6 +177,11 @@ watch([() => paginationData.currentPage, () => paginationData.pageSize], getTabl
               <el-tag v-if="scope.row.type === 'ADMIN'" type="danger" effect="plain">管理员</el-tag>
               <el-tag v-else-if="scope.row.type === 'TEACHER'" type="warning" effect="plain">教师</el-tag>
               <el-tag v-else-if="scope.row.type === 'STUDENT'" type="info" effect="plain">学生</el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column prop="teacherOffice" label="办公地点" align="center">
+            <template #default="scope">
+              <el-tag type="info" effect="plain">{{ scope.row.teacherOffice || "无" }}</el-tag>
             </template>
           </el-table-column>
           <el-table-column prop="phone" label="手机号" align="center" />
@@ -207,11 +216,38 @@ watch([() => paginationData.currentPage, () => paginationData.pageSize], getTabl
       width="30%"
     >
       <el-form ref="formRef" :model="formData" :rules="formRules" label-width="100px" label-position="left">
-        <el-form-item prop="username" label="用户名">
-          <el-input v-model="formData.username" placeholder="请输入" />
+        <el-form-item prop="id" label="用户ID">
+          <el-input v-model="formData.id" disabled placeholder="自动生成，不用输入" />
         </el-form-item>
-        <el-form-item prop="password" label="密码" v-if="formData.id === undefined">
-          <el-input v-model="formData.password" placeholder="请输入" />
+        <el-form-item prop="username" label="账号">
+          <el-input v-model="formData.username" :disabled="!!formData.id" placeholder="请输入" />
+        </el-form-item>
+        <el-form-item v-if="!formData.id" prop="password" label="密码">
+          <el-input maxlength="14" show-word-limit type="password" v-model="formData.password" placeholder="请输入" />
+        </el-form-item>
+        <el-form-item prop="nickname" label="昵称">
+          <el-input v-model="formData.nickname" placeholder="请输入" />
+        </el-form-item>
+        <el-form-item prop="type" label="角色">
+          <template>
+            <el-select :disabled="!!formData.id" v-model="formData.type" placeholder="请选择" style="width: 240px">
+              <el-option v-for="item in userTypes" :key="item.value" :label="item.label" :value="item.value" />
+            </el-select>
+          </template>
+        </el-form-item>
+        <el-form-item prop="teacherOffice" label="办公地点">
+          <el-input v-model="formData.teacherOffice" :disabled="formData.type != 'TEACHER'" placeholder="仅教师可填" />
+        </el-form-item>
+        <el-form-item prop="phone" label="手机号">
+          <el-input v-model="formData.phone" placeholder="请输入" />
+        </el-form-item>
+        <el-form-item prop="phone" label="简介">
+          <el-input
+            :autosize="{ minRows: 3, maxRows: 5 }"
+            type="textarea"
+            v-model="formData.intro"
+            placeholder="请输入"
+          />
         </el-form-item>
       </el-form>
       <template #footer>

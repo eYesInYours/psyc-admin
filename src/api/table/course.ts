@@ -4,7 +4,7 @@ import type * as Table from "./types/table"
 /** 增 */
 export function createTableDataApi(data: Table.CreateOrUpdateTableRequestData) {
   return request({
-    url: "/admin/add",
+    url: "/course/add",
     method: "post",
     data
   })
@@ -13,7 +13,7 @@ export function createTableDataApi(data: Table.CreateOrUpdateTableRequestData) {
 /** 删 */
 export function deleteTableDataApi(id: string) {
   return request({
-    url: `/admin/del/${id}`,
+    url: `/course/del/${id}`,
     method: "delete"
   })
 }
@@ -21,7 +21,7 @@ export function deleteTableDataApi(id: string) {
 /** 改 */
 export function updateTableDataApi(data: Table.CreateOrUpdateTableRequestData) {
   return request({
-    url: "/admin/update",
+    url: "/course/update",
     method: "put",
     data
   })
@@ -30,7 +30,7 @@ export function updateTableDataApi(data: Table.CreateOrUpdateTableRequestData) {
 /** 查 */
 export function getTableDataApi(params: Table.GetTableRequestData) {
   return request<Table.GetTableResponseData>({
-    url: "/admin/list",
+    url: "/course/list",
     method: "get",
     params
   })
