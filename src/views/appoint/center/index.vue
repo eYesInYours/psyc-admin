@@ -178,16 +178,8 @@ watch([() => paginationData.currentPage, () => paginationData.pageSize], getTabl
   <div class="app-container">
     <el-card v-loading="loading" shadow="never" class="search-wrapper">
       <el-form ref="searchFormRef" :inline="true" :model="searchData">
-        <el-form-item prop="username" label="用户名">
-          <el-input v-model="searchData.username" placeholder="请输入" />
-        </el-form-item>
-        <el-form-item prop="phone" label="手机号">
-          <el-input v-model="searchData.phone" placeholder="请输入" />
-        </el-form-item>
-        <el-form-item prop="type" label="用户类型">
-          <el-select v-model="searchData.type" placeholder="请选择" style="width: 240px">
-            <el-option v-for="item in userTypes" :key="item.value" :label="item.label" :value="item.value" />
-          </el-select>
+        <el-form-item prop="username" label="老师名字">
+          <el-input v-model="searchData.username" placeholder="请输入（可模糊搜索）" />
         </el-form-item>
         <el-form-item>
           <el-button type="primary" :icon="Search" @click="handleSearch">查询</el-button>
@@ -211,33 +203,46 @@ watch([() => paginationData.currentPage, () => paginationData.pageSize], getTabl
         </div>
       </div>
       <div class="table-wrapper">
-        <el-table :data="tableData">
-          <el-table-column type="selection" width="50" align="center" />
-          <el-table-column prop="id" label="用户ID" align="center" />
-          <el-table-column prop="username" label="账号" align="center" />
-          <el-table-column prop="nickname" label="昵称" align="center" />
-          <el-table-column prop="type" label="角色" align="center">
-            <template #default="scope">
-              <el-tag v-if="scope.row.type === 'ADMIN'" type="danger" effect="plain">管理员</el-tag>
-              <el-tag v-else-if="scope.row.type === 'TEACHER'" type="warning" effect="plain">教师</el-tag>
-              <el-tag v-else-if="scope.row.type === 'STUDENT'" type="info" effect="plain">学生</el-tag>
+        <!--        <el-table :data="tableData">-->
+        <!--          <el-table-column type="selection" width="50" align="center" />-->
+        <!--          <el-table-column prop="id" label="用户ID" align="center" />-->
+        <!--          <el-table-column prop="username" label="账号" align="center" />-->
+        <!--          <el-table-column prop="nickname" label="昵称" align="center" />-->
+        <!--          <el-table-column prop="type" label="角色" align="center">-->
+        <!--            <template #default="scope">-->
+        <!--              <el-tag v-if="scope.row.type === 'ADMIN'" type="danger" effect="plain">管理员</el-tag>-->
+        <!--              <el-tag v-else-if="scope.row.type === 'TEACHER'" type="warning" effect="plain">教师</el-tag>-->
+        <!--              <el-tag v-else-if="scope.row.type === 'STUDENT'" type="info" effect="plain">学生</el-tag>-->
+        <!--            </template>-->
+        <!--          </el-table-column>-->
+        <!--          <el-table-column prop="teacherOffice" label="办公地点" align="center">-->
+        <!--            <template #default="scope">-->
+        <!--              <el-tag type="info" effect="plain">{{ scope.row.officeNames.join('') || "无" }}</el-tag>-->
+        <!--            </template>-->
+        <!--          </el-table-column>-->
+        <!--          <el-table-column prop="phone" label="手机号" align="center" />-->
+        <!--          <el-table-column prop="createTime" label="创建时间" align="center" />-->
+        <!--          <el-table-column prop="updateTime" label="更新时间" align="center" />-->
+        <!--          <el-table-column fixed="right" label="操作" width="150" align="center">-->
+        <!--            <template #default="scope">-->
+        <!--              <el-button type="primary" text bg size="small" @click="handleUpdate(scope.row)">修改</el-button>-->
+        <!--              <el-button type="danger" text bg size="small" @click="handleDelete(scope.row)">删除</el-button>-->
+        <!--            </template>-->
+        <!--          </el-table-column>-->
+        <!--        </el-table>-->
+        <el-space wrap>
+          <el-card v-for="i in 13" :key="i" class="box-card" style="width: 310px">
+            <template #header>
+              <div class="card-header">
+                <span>username</span>
+                <el-button class="button" text>Operation button</el-button>
+              </div>
             </template>
-          </el-table-column>
-          <el-table-column prop="teacherOffice" label="办公地点" align="center">
-            <template #default="scope">
-              <el-tag type="info" effect="plain">{{ scope.row.officeNames.join("") || "无" }}</el-tag>
-            </template>
-          </el-table-column>
-          <el-table-column prop="phone" label="手机号" align="center" />
-          <el-table-column prop="createTime" label="创建时间" align="center" />
-          <el-table-column prop="updateTime" label="更新时间" align="center" />
-          <el-table-column fixed="right" label="操作" width="150" align="center">
-            <template #default="scope">
-              <el-button type="primary" text bg size="small" @click="handleUpdate(scope.row)">修改</el-button>
-              <el-button type="danger" text bg size="small" @click="handleDelete(scope.row)">删除</el-button>
-            </template>
-          </el-table-column>
-        </el-table>
+            <div v-for="o in 4" :key="o" class="text item">
+              {{ "List item " + o }}
+            </div>
+          </el-card>
+        </el-space>
       </div>
       <div class="pager-wrapper">
         <el-pagination

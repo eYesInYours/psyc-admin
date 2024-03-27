@@ -241,7 +241,7 @@ export const dynamicRoutes: RouteRecordRaw[] = [
     meta: {
       title: "管理模块",
       elIcon: "Grid",
-      roles: ["ADMIN", "TEACHER"]
+      roles: ["ADMIN", "TEACHER", "STUDENT"]
     },
     children: [
       {
@@ -263,40 +263,72 @@ export const dynamicRoutes: RouteRecordRaw[] = [
           keepAlive: true,
           roles: ["ADMIN"]
         }
+      },
+      {
+        path: "order",
+        component: () => import("@/views/table/order-manage/index.vue"),
+        name: "order",
+        meta: {
+          title: "订单管理",
+          keepAlive: true,
+          roles: ["ADMIN", "TEACHER", "STUDENT"]
+        }
       }
     ]
   },
   {
-    path: "/permission",
+    path: "/appoint",
     component: Layouts,
-    redirect: "/permission/page",
-    name: "Permission",
+    redirect: "/appoint/center",
+    name: "appoint",
     meta: {
-      title: "权限",
+      title: "预约模块",
       svgIcon: "lock",
-      roles: ["ADMIN", "editor"], // 可以在根路由中设置角色
+      roles: ["ADMIN", "TEACHER", "STUDENT"], // 可以在根路由中设置角色
       alwaysShow: true // 将始终显示根菜单
     },
     children: [
       {
-        path: "page",
-        component: () => import("@/views/permission/page.vue"),
-        name: "PagePermission",
+        path: "center",
+        component: () => import("@/views/appoint/center/index.vue"),
+        name: "AppointCenter",
         meta: {
-          title: "页面级",
-          roles: ["ADMIN"] // 或者在子导航中设置角色
-        }
-      },
-      {
-        path: "directive",
-        component: () => import("@/views/permission/directive.vue"),
-        name: "DirectivePermission",
-        meta: {
-          title: "按钮级" // 如果未设置角色，则表示：该页面不需要权限，但会继承根路由的角色
+          title: "预约中心" // 或者在子导航中设置角色
         }
       }
     ]
   }
+  // {
+  //   path: "/permission",
+  //   component: Layouts,
+  //   redirect: "/permission/page",
+  //   name: "Permission",
+  //   meta: {
+  //     title: "权限",
+  //     svgIcon: "lock",
+  //     roles: ["ADMIN", "editor"], // 可以在根路由中设置角色
+  //     alwaysShow: true // 将始终显示根菜单
+  //   },
+  //   children: [
+  //     {
+  //       path: "page",
+  //       component: () => import("@/views/permission/page.vue"),
+  //       name: "PagePermission",
+  //       meta: {
+  //         title: "页面级",
+  //         roles: ["ADMIN"] // 或者在子导航中设置角色
+  //       }
+  //     },
+  //     {
+  //       path: "directive",
+  //       component: () => import("@/views/permission/directive.vue"),
+  //       name: "DirectivePermission",
+  //       meta: {
+  //         title: "按钮级" // 如果未设置角色，则表示：该页面不需要权限，但会继承根路由的角色
+  //       }
+  //     }
+  //   ]
+  // }
 ]
 
 const router = createRouter({

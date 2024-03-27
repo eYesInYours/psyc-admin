@@ -9,5 +9,6 @@ export interface User {
   updateTime?: String
   avatar?: String
   roles?: Array<string> // 权限
-  teacherOffice?: string // 老师科室
+  officeIds?: Array<string>
+  officeNames?: Array<string>
 }
