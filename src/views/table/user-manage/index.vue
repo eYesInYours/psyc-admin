@@ -133,20 +133,32 @@ interface ListItem {
   label: string
 }
 const searchOptions = ref<Array<ListItem>>([])
-const remoteMethod = (query: string) => {
-  console.log(query)
-  if (query) {
-    loading.value = true
-    // setTimeout(() => {
-    //   loading.value = false
-    //   searchOptions.value = list.value.filter((item) => {
-    //     return item.label.toLowerCase().includes(query.toLowerCase())
-    //   })
-    // }, 200)
-  } else {
-    searchOptions.value = []
-  }
+const timer = ref()
+const classrooms = ref<any>([])
+const searchReq = async (query: string) => {
+  const res = (await searchTableDataApi(query)) as any
+  classrooms.value = res.data.map((classroom: any) => ({
+    value: classroom.id,
+    label: classroom.location,
+    children: classroom.rooms?.map((room: any, index: number) => ({
+      value: room.doorPlate,
+      label: room.doorPlate
+    }))
+  }))
 }
+
+const remoteMethod = async (query: string) => {
+  if (timer.value) clearTimeout(timer.value)
+  timer.value = setTimeout(() => {
+    searchReq(query)
+  }, 300)
+}
+
+const onRoomSelected = (e: any) => {
+  console.log(e)
+}
+
+remoteMethod("")
 //#endregion
 
 /** 监听分页参数的变化 */
@@ -252,14 +264,14 @@ watch([() => paginationData.currentPage, () => paginationData.pageSize], getTabl
           <el-input v-model="formData.nickname" placeholder="请输入" />
         </el-form-item>
         <el-form-item prop="type" label="角色">
-          <template>
+          <template #default>
             <el-select :disabled="!!formData.id" v-model="formData.type" placeholder="请选择" style="width: 240px">
               <el-option v-for="item in userTypes" :key="item.value" :label="item.label" :value="item.value" />
             </el-select>
           </template>
         </el-form-item>
         <el-form-item prop="teacherOffice" label="办公地点">
-          <el-select
+          <!-- <el-select
             :disabled="formData.type != 'TEACHER'"
             v-model="formData.teacherOffice"
             multiple
@@ -272,9 +284,16 @@ watch([() => paginationData.currentPage, () => paginationData.pageSize], getTabl
             :loading="loading"
             style="width: 240px"
           >
-            <el-option v-for="item in searchOptions" :key="item.value" :label="item.label" :value="item.value" />
-          </el-select>
-          <!-- <el-input v-model="formData.teacherOffice" :disabled="formData.type != 'TEACHER'" placeholder="仅教师可填" /> -->
+            <el-option v-for="item in classrooms" :key="item.id" :label="item.location" :value="item.id" />
+          </el-select> -->
+          <el-tree-select
+            filterable
+            v-model="formData.teacherOffice"
+            :data="classrooms"
+            :render-after-expand="false"
+            style="width: 240px"
+            @node-click="onRoomSelected"
+          />
         </el-form-item>
         <el-form-item prop="phone" label="手机号">
           <el-input v-model="formData.phone" placeholder="请输入" />
