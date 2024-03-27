@@ -3,7 +3,7 @@ import { reactive, ref, watch, computed } from "vue"
 import { createTableDataApi, deleteTableDataApi, updateTableDataApi, getTableDataApi } from "@/api/table/classroom"
 import { type CreateOrUpdateTableRequestData, type GetTableData } from "@/api/table/types/table"
 import { type FormInstance, type FormRules, ElMessage, ElMessageBox } from "element-plus"
-import { Search, Refresh, CirclePlus, Delete, Download, RefreshRight } from "@element-plus/icons-vue"
+import { Search, Refresh, CirclePlus, Delete, Download, RefreshRight, Plus } from "@element-plus/icons-vue"
 import { usePagination } from "@/hooks/usePagination"
 import { cloneDeep } from "lodash-es"
 
@@ -19,8 +19,12 @@ const { paginationData, handleCurrentChange, handleSizeChange } = usePagination(
 const DEFAULT_FORM_DATA: CreateOrUpdateTableRequestData = {
   id: undefined,
   location: "",
-  capacity: 0,
-  rooms: []
+  rooms: [
+    {
+      capacity: 1,
+      doorPlate: ""
+    }
+  ]
 }
 const dialogVisible = ref<boolean>(false)
 const formRef = ref<FormInstance | null>(null)
@@ -34,23 +38,30 @@ const roomsSelector: any = computed(() =>
 )
 const selectRooms = ref([])
 const validateRoom = (rule: any, value: any, callback: any) => {
-  if (!selectRooms.value.length) {
-    callback(new Error("请至少添加一个教室"))
-  } else {
-    callback()
-  }
+  value.forEach((item: any) => {
+    if (!item.doorPlate) return callback(new Error("请输入教室门牌号"))
+  })
+  callback()
 }
 const formRules: FormRules<CreateOrUpdateTableRequestData> = {
   location: [{ required: true, trigger: "blur", message: "请输入教学楼" }],
-  capacity: [{ required: true, trigger: "blur", message: "请输入教室容量" }],
+  // capacity: [{ required: true, trigger: "blur", message: "请输入教室容量" }],
   rooms: [{ required: true, trigger: "blur", validator: validateRoom }]
 }
+
+/* 新增教室 */
+const addNewRoom = () => {
+  formData.value.rooms?.push({
+    doorPlate: "",
+    capacity: 1
+  })
+}
+
 const handleCreateOrUpdate = () => {
   formRef.value?.validate((valid: boolean, fields) => {
     if (!valid) return console.error("表单校验不通过", fields)
     loading.value = true
     const api = formData.value.id === undefined ? createTableDataApi : updateTableDataApi
-    formData.value.rooms = selectRooms.value
     api(formData.value)
       .then(() => {
         ElMessage.success("操作成功")
@@ -69,8 +80,13 @@ const resetForm = () => {
 //#endregion
 
 //#region 删
+const delRoom = (index: number) => {
+  console.log(index)
+  formData.value.rooms?.splice(index, 1)
+}
+
 const handleDelete = (row: GetTableData) => {
-  ElMessageBox.confirm(`正在删除用户：${row.username}，确认删除？`, "提示", {
+  ElMessageBox.confirm(`正在删除教学楼：${row.location}，确认删除？`, "提示", {
     confirmButtonText: "确定",
     cancelButtonText: "取消",
     type: "warning"
@@ -87,6 +103,12 @@ const handleDelete = (row: GetTableData) => {
 const handleUpdate = (row: GetTableData) => {
   dialogVisible.value = true
   formData.value = cloneDeep(row)
+  if (!formData.value.rooms?.length) {
+    formData.value.rooms?.push({
+      doorPlate: "",
+      capacity: 1
+    })
+  }
 }
 //#endregion
 
@@ -176,10 +198,24 @@ watch([() => paginationData.currentPage, () => paginationData.pageSize], getTabl
           <el-table-column prop="location" label="位置" align="center" />
           <el-table-column prop="rooms" label="教室" align="center">
             <template #default="scope">
-              <el-tag type="primary" v-for="(item, index) in scope.row.rooms" :key="index">{{ item }}</el-tag>
+              <!--              <el-tag type="primary" >{{ item }}</el-tag>-->
+              <el-popover
+                v-for="(item, index) in scope.row.rooms"
+                :key="index"
+                placement="top-start"
+                title="容纳人数"
+                :width="200"
+                trigger="hover"
+                :content="String(item.capacity)"
+              >
+                <template #reference>
+                  <el-button class="m-2">
+                    <el-text class="mx-1" type="info">教室门牌号：{{ item.doorPlate }}</el-text>
+                  </el-button>
+                </template>
+              </el-popover>
             </template>
           </el-table-column>
-          <el-table-column prop="capacity" label="容纳人数" align="center" />
           <el-table-column prop="createTime" label="创建时间" align="center" />
           <el-table-column prop="updateTime" label="更新时间" align="center" />
           <el-table-column fixed="right" label="操作" width="150" align="center">
@@ -211,27 +247,31 @@ watch([() => paginationData.currentPage, () => paginationData.pageSize], getTabl
       width="30%"
     >
       <el-form ref="formRef" :model="formData" :rules="formRules" label-width="100px" label-position="left">
-        <el-form-item prop="id" label="用户ID">
+        <el-form-item prop="id" label="教学楼ID">
           <el-input v-model="formData.id" disabled placeholder="自动生成，不用输入" />
         </el-form-item>
         <el-form-item prop="location" label="教学楼">
           <el-input v-model="formData.location" placeholder="请输入" />
         </el-form-item>
         <el-form-item prop="rooms" label="教室">
-          <el-select-v2
-            v-model="formData.rooms"
-            :options="roomsSelector"
-            placeholder="输入后鼠标点击添加"
-            style="width: 240px; margin-right: 16px; vertical-align: middle"
-            allow-create
-            filterable
-            multiple
-            clearable
-            :reserve-keyword="false"
-          />
+          <el-card style="min-width: 70%; margin-bottom: 10px" v-for="(item, index) in formData.rooms" :key="index">
+            <template #header>
+              <div class="card-header">
+                <el-text class="mx-1" type="info">教室门牌：</el-text>
+                <el-input v-model="item.doorPlate" style="width: 120px" size="small" placeholder="请输入门牌号" />
+              </div>
+            </template>
+            <template #default>
+              <el-text class="mx-1" type="info">容纳人数：</el-text>
+              <el-input-number size="small" v-model="item.capacity" :min="1" :max="200" />
+            </template>
+            <template #footer>
+              <el-button type="danger" :icon="Delete" circle @click="delRoom(index)" />
+            </template>
+          </el-card>
         </el-form-item>
-        <el-form-item prop="capacity" label="容纳人数">
-          <el-input show-word-limit type="number" v-model="formData.capacity" placeholder="请输入" />
+        <el-form-item>
+          <el-button type="danger" round :icon="Plus" @click="addNewRoom">添加教室</el-button>
         </el-form-item>
       </el-form>
       <template #footer>

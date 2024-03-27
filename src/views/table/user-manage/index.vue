@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import { reactive, ref, watch } from "vue"
 import { createTableDataApi, deleteTableDataApi, updateTableDataApi, getTableDataApi } from "@/api/table"
+import { searchTableDataApi } from "@/api/table/classroom"
 import { type CreateOrUpdateTableRequestData, type GetTableData } from "@/api/table/types/table"
 import { type FormInstance, type FormRules, ElMessage, ElMessageBox } from "element-plus"
 import { Search, Refresh, CirclePlus, Delete, Download, RefreshRight } from "@element-plus/icons-vue"
@@ -126,6 +127,28 @@ const resetSearch = () => {
 }
 //#endregion
 
+//#region search
+interface ListItem {
+  value: string
+  label: string
+}
+const searchOptions = ref<Array<ListItem>>([])
+const remoteMethod = (query: string) => {
+  console.log(query)
+  if (query) {
+    loading.value = true
+    // setTimeout(() => {
+    //   loading.value = false
+    //   searchOptions.value = list.value.filter((item) => {
+    //     return item.label.toLowerCase().includes(query.toLowerCase())
+    //   })
+    // }, 200)
+  } else {
+    searchOptions.value = []
+  }
+}
+//#endregion
+
 /** 监听分页参数的变化 */
 watch([() => paginationData.currentPage, () => paginationData.pageSize], getTableData, { immediate: true })
 </script>
@@ -236,7 +259,22 @@ watch([() => paginationData.currentPage, () => paginationData.pageSize], getTabl
           </template>
         </el-form-item>
         <el-form-item prop="teacherOffice" label="办公地点">
-          <el-input v-model="formData.teacherOffice" :disabled="formData.type != 'TEACHER'" placeholder="仅教师可填" />
+          <el-select
+            :disabled="formData.type != 'TEACHER'"
+            v-model="formData.teacherOffice"
+            multiple
+            filterable
+            remote
+            reserve-keyword
+            placeholder="请输入关键字搜索（教师选）"
+            remote-show-suffix
+            :remote-method="remoteMethod"
+            :loading="loading"
+            style="width: 240px"
+          >
+            <el-option v-for="item in searchOptions" :key="item.value" :label="item.label" :value="item.value" />
+          </el-select>
+          <!-- <el-input v-model="formData.teacherOffice" :disabled="formData.type != 'TEACHER'" placeholder="仅教师可填" /> -->
         </el-form-item>
         <el-form-item prop="phone" label="手机号">
           <el-input v-model="formData.phone" placeholder="请输入" />

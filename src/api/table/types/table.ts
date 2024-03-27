@@ -7,7 +7,10 @@ export interface CreateOrUpdateTableRequestData extends User {
   intro?: string
   location?: string
   capacity?: number
-  rooms?: Array<string>
+  rooms?: Array<{
+    doorPlate: string
+    capacity: number
+  }>
 }
 
 export interface GetTableRequestData {
@@ -28,6 +31,11 @@ export interface GetTableData extends User {
   password?: string
   phone?: string
   intro?: string
+  location?: string
+  rooms?: Array<{
+    doorPlate: string
+    capacity: number
+  }>
 }
 
 export type GetTableResponseData = ApiResponseData<{

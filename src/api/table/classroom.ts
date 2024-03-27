@@ -35,3 +35,10 @@ export function getTableDataApi(params: Table.GetTableRequestData) {
     params
   })
 }
+
+export function searchTableDataApi(keyword?: string) {
+  return request<Table.GetTableResponseData>({
+    url: `/classroom/search?keyword=${keyword}`,
+    method: "get"
+  })
+}
