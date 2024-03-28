@@ -11,6 +11,7 @@ export interface CreateOrUpdateTableRequestData extends User {
     doorPlate: string
     capacity: number
   }>
+  sex?: "MAN" | "WOMAN" | ""
 }
 
 export interface GetTableRequestData {

@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { reactive, ref, watch } from "vue"
-import { createTableDataApi, deleteTableDataApi, updateTableDataApi, getTableDataApi } from "@/api/table"
+import { getTableDataApi } from "@/api/appoint"
 import { searchTableDataApi } from "@/api/table/classroom"
 import { type CreateOrUpdateTableRequestData, type GetTableData } from "@/api/table/types/table"
 import { type FormInstance, type FormRules, ElMessage, ElMessageBox } from "element-plus"
@@ -33,27 +33,27 @@ const formRules: FormRules<CreateOrUpdateTableRequestData> = {
   password: [{ required: true, trigger: "blur", message: "请输入密码" }]
 }
 const handleCreateOrUpdate = () => {
-  formRef.value?.validate((valid: boolean, fields) => {
-    if (!valid) return console.error("表单校验不通过", fields)
-    loading.value = true
-    const api = formData.value.id === undefined ? createTableDataApi : updateTableDataApi
-    if (formData.value.officeIds?.length) {
-      const [pId, cId] = formData.value.officeIds
-      const parent = classrooms.value.find((item: ListItem) => item.value == pId)
-      const child = parent?.children?.find((item: ListItem) => item.value == cId)
-      console.log(parent, child)
-      formData.value.officeNames = [parent?.label || "", child?.label || ""]
-    }
-    api(formData.value)
-      .then(() => {
-        ElMessage.success("操作成功")
-        dialogVisible.value = false
-        getTableData()
-      })
-      .finally(() => {
-        loading.value = false
-      })
-  })
+  // formRef.value?.validate((valid: boolean, fields) => {
+  //   if (!valid) return console.error("表单校验不通过", fields)
+  //   loading.value = true
+  //   const api = formData.value.id === undefined ? createTableDataApi : updateTableDataApi
+  //   if (formData.value.officeIds?.length) {
+  //     const [pId, cId] = formData.value.officeIds
+  //     const parent = classrooms.value.find((item: ListItem) => item.value == pId)
+  //     const child = parent?.children?.find((item: ListItem) => item.value == cId)
+  //     console.log(parent, child)
+  //     formData.value.officeNames = [parent?.label || "", child?.label || ""]
+  //   }
+  //   api(formData.value)
+  //     .then(() => {
+  //       ElMessage.success("操作成功")
+  //       dialogVisible.value = false
+  //       getTableData()
+  //     })
+  //     .finally(() => {
+  //       loading.value = false
+  //     })
+  // })
 }
 const resetForm = () => {
   formRef.value?.clearValidate()
@@ -63,16 +63,16 @@ const resetForm = () => {
 
 //#region 删
 const handleDelete = (row: GetTableData) => {
-  ElMessageBox.confirm(`正在删除用户：${row.username}，确认删除？`, "提示", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
-    type: "warning"
-  }).then(() => {
-    deleteTableDataApi(row.id as string).then(() => {
-      ElMessage.success("删除成功")
-      getTableData()
-    })
-  })
+  // ElMessageBox.confirm(`正在删除用户：${row.username}，确认删除？`, "提示", {
+  //   confirmButtonText: "确定",
+  //   cancelButtonText: "取消",
+  //   type: "warning"
+  // }).then(() => {
+  //   deleteTableDataApi(row.id as string).then(() => {
+  //     ElMessage.success("删除成功")
+  //     getTableData()
+  //   })
+  // })
 }
 //#endregion
 
@@ -110,9 +110,9 @@ const getTableData = () => {
   getTableDataApi({
     pageNum: paginationData.currentPage,
     pageSize: paginationData.pageSize,
-    username: searchData.username || undefined,
-    phone: searchData.phone || undefined,
-    type: searchData.type || undefined
+    username: searchData.username || undefined
+    // phone: searchData.phone || undefined,
+    // type: searchData.type || undefined
   })
     .then(({ data }) => {
       paginationData.total = data.total
@@ -132,6 +132,9 @@ const resetSearch = () => {
   searchFormRef.value?.resetFields()
   handleSearch()
 }
+
+// 查看老师详情：打开弹框
+const getTeacherDetail = () => {}
 //#endregion
 
 //#region search
@@ -167,7 +170,7 @@ const onRoomSelected = (value: any) => {
   console.log(value)
 }
 
-remoteMethod("")
+// remoteMethod("")
 //#endregion
 
 /** 监听分页参数的变化 */
@@ -203,44 +206,25 @@ watch([() => paginationData.currentPage, () => paginationData.pageSize], getTabl
         </div>
       </div>
       <div class="table-wrapper">
-        <!--        <el-table :data="tableData">-->
-        <!--          <el-table-column type="selection" width="50" align="center" />-->
-        <!--          <el-table-column prop="id" label="用户ID" align="center" />-->
-        <!--          <el-table-column prop="username" label="账号" align="center" />-->
-        <!--          <el-table-column prop="nickname" label="昵称" align="center" />-->
-        <!--          <el-table-column prop="type" label="角色" align="center">-->
-        <!--            <template #default="scope">-->
-        <!--              <el-tag v-if="scope.row.type === 'ADMIN'" type="danger" effect="plain">管理员</el-tag>-->
-        <!--              <el-tag v-else-if="scope.row.type === 'TEACHER'" type="warning" effect="plain">教师</el-tag>-->
-        <!--              <el-tag v-else-if="scope.row.type === 'STUDENT'" type="info" effect="plain">学生</el-tag>-->
-        <!--            </template>-->
-        <!--          </el-table-column>-->
-        <!--          <el-table-column prop="teacherOffice" label="办公地点" align="center">-->
-        <!--            <template #default="scope">-->
-        <!--              <el-tag type="info" effect="plain">{{ scope.row.officeNames.join('') || "无" }}</el-tag>-->
-        <!--            </template>-->
-        <!--          </el-table-column>-->
-        <!--          <el-table-column prop="phone" label="手机号" align="center" />-->
-        <!--          <el-table-column prop="createTime" label="创建时间" align="center" />-->
-        <!--          <el-table-column prop="updateTime" label="更新时间" align="center" />-->
-        <!--          <el-table-column fixed="right" label="操作" width="150" align="center">-->
-        <!--            <template #default="scope">-->
-        <!--              <el-button type="primary" text bg size="small" @click="handleUpdate(scope.row)">修改</el-button>-->
-        <!--              <el-button type="danger" text bg size="small" @click="handleDelete(scope.row)">删除</el-button>-->
-        <!--            </template>-->
-        <!--          </el-table-column>-->
-        <!--        </el-table>-->
         <el-space wrap>
-          <el-card v-for="i in 13" :key="i" class="box-card" style="width: 310px">
+          <el-card v-for="i in tableData" :key="i.id" class="box-card" style="width: 310px">
             <template #header>
-              <div class="card-header">
-                <span>username</span>
-                <el-button class="button" text>Operation button</el-button>
-              </div>
+              <el-space wrap>
+                <el-avatar size="small" src="https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png" />
+                <el-space direction="vertical" alignment="flex-start">
+                  <el-text class="mx-1" type="info">{{ i.nickname }}</el-text>
+                  <el-text class="mx-1" type="info" size="small"
+                    ><el-icon><Location /></el-icon>{{ i.officeNames?.join("") }}</el-text
+                  >
+                </el-space>
+              </el-space>
             </template>
-            <div v-for="o in 4" :key="o" class="text item">
-              {{ "List item " + o }}
+            <div class="text item">
+              {{ i.intro }}
             </div>
+            <template #footer>
+              <el-button plain @click="getTeacherDetail">看TA</el-button>
+            </template>
           </el-card>
         </el-space>
       </div>
@@ -334,5 +318,10 @@ watch([() => paginationData.currentPage, () => paginationData.pageSize], getTabl
 .pager-wrapper {
   display: flex;
   justify-content: flex-end;
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
 }
 </style>

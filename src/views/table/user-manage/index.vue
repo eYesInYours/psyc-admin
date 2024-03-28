@@ -23,7 +23,8 @@ const DEFAULT_FORM_DATA: CreateOrUpdateTableRequestData = {
   password: "",
   type: undefined,
   phone: "",
-  intro: ""
+  intro: "",
+  sex: ""
 }
 const dialogVisible = ref<boolean>(false)
 const formRef = ref<FormInstance | null>(null)
@@ -216,6 +217,13 @@ watch([() => paginationData.currentPage, () => paginationData.pageSize], getTabl
           <el-table-column prop="id" label="用户ID" align="center" />
           <el-table-column prop="username" label="账号" align="center" />
           <el-table-column prop="nickname" label="昵称" align="center" />
+          <el-table-column prop="sex" label="性别">
+            <template #default="scope">
+              <el-tag v-if="scope.row?.sex === 'WOMAN'" type="danger" effect="plain">女</el-tag>
+              <el-tag v-else-if="scope.row?.sex === 'MAN'" type="warning" effect="plain">男</el-tag>
+              <el-tag v-else-if="scope.row?.sex === ''" type="info" effect="plain">不愿透露</el-tag>
+            </template>
+          </el-table-column>
           <el-table-column prop="type" label="角色" align="center">
             <template #default="scope">
               <el-tag v-if="scope.row.type === 'ADMIN'" type="danger" effect="plain">管理员</el-tag>
@@ -271,6 +279,13 @@ watch([() => paginationData.currentPage, () => paginationData.pageSize], getTabl
         </el-form-item>
         <el-form-item prop="nickname" label="昵称">
           <el-input v-model="formData.nickname" placeholder="请输入" />
+        </el-form-item>
+        <el-form-item prop="sex" label="性别">
+          <el-radio-group v-model="formData.sex" class="ml-4">
+            <el-radio value="MAN">男</el-radio>
+            <el-radio value="WOMAN">女</el-radio>
+            <el-radio value="">不愿透露</el-radio>
+          </el-radio-group>
         </el-form-item>
         <el-form-item prop="type" label="角色">
           <template #default>
