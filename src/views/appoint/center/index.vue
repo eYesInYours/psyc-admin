@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import { reactive, ref, watch } from "vue"
 import { getTableDataApi } from "@/api/appoint"
+import { createAppointOrder } from "@/api/table/order"
 import { searchTableDataApi } from "@/api/table/classroom"
 import { type CreateOrUpdateTableRequestData, type GetTableData } from "@/api/table/types/table"
 import { type FormInstance, type FormRules, ElMessage, ElMessageBox } from "element-plus"
@@ -23,7 +24,8 @@ const DEFAULT_FORM_DATA: CreateOrUpdateTableRequestData = {
   password: "",
   type: undefined,
   phone: "",
-  intro: ""
+  intro: "",
+  times: []
 }
 const dialogVisible = ref<boolean>(false)
 const formRef = ref<FormInstance | null>(null)
@@ -33,27 +35,20 @@ const formRules: FormRules<CreateOrUpdateTableRequestData> = {
   password: [{ required: true, trigger: "blur", message: "请输入密码" }]
 }
 const handleCreateOrUpdate = () => {
-  // formRef.value?.validate((valid: boolean, fields) => {
-  //   if (!valid) return console.error("表单校验不通过", fields)
-  //   loading.value = true
-  //   const api = formData.value.id === undefined ? createTableDataApi : updateTableDataApi
-  //   if (formData.value.officeIds?.length) {
-  //     const [pId, cId] = formData.value.officeIds
-  //     const parent = classrooms.value.find((item: ListItem) => item.value == pId)
-  //     const child = parent?.children?.find((item: ListItem) => item.value == cId)
-  //     console.log(parent, child)
-  //     formData.value.officeNames = [parent?.label || "", child?.label || ""]
-  //   }
-  //   api(formData.value)
-  //     .then(() => {
-  //       ElMessage.success("操作成功")
-  //       dialogVisible.value = false
-  //       getTableData()
-  //     })
-  //     .finally(() => {
-  //       loading.value = false
-  //     })
-  // })
+  formRef.value?.validate((valid: boolean, fields) => {
+    if (!valid) return console.error("表单校验不通过", fields)
+    loading.value = true
+    const api = createAppointOrder
+    api(formData.value)
+      .then(() => {
+        ElMessage.success("操作成功")
+        dialogVisible.value = false
+        getTableData()
+      })
+      .finally(() => {
+        loading.value = false
+      })
+  })
 }
 const resetForm = () => {
   formRef.value?.clearValidate()
@@ -80,6 +75,7 @@ const handleDelete = (row: GetTableData) => {
 const handleUpdate = (row: GetTableData) => {
   dialogVisible.value = true
   formData.value = cloneDeep(row)
+  console.log(formData.value)
 }
 //#endregion
 
@@ -133,8 +129,6 @@ const resetSearch = () => {
   handleSearch()
 }
 
-// 查看老师详情：打开弹框
-const getTeacherDetail = () => {}
 //#endregion
 
 //#region search
@@ -173,8 +167,18 @@ const onRoomSelected = (value: any) => {
 // remoteMethod("")
 //#endregion
 
+const formatSex = (sex: string | undefined) => {
+  if (sex == "MAN") return "男"
+  else if (sex == "WOMAN") return "女"
+  else return "不愿透露"
+}
+
 /** 监听分页参数的变化 */
 watch([() => paginationData.currentPage, () => paginationData.pageSize], getTableData, { immediate: true })
+
+//#region 预约
+
+//#endregion
 </script>
 
 <template>
@@ -193,7 +197,7 @@ watch([() => paginationData.currentPage, () => paginationData.pageSize], getTabl
     <el-card v-loading="loading" shadow="never">
       <div class="toolbar-wrapper">
         <div>
-          <el-button type="primary" :icon="CirclePlus" @click="dialogVisible = true">新增用户</el-button>
+          <!--          <el-button type="primary" :icon="CirclePlus" @click="dialogVisible = true">新增用户</el-button>-->
           <!-- <el-button type="danger" :icon="Delete">批量删除</el-button> -->
         </div>
         <div>
@@ -220,10 +224,10 @@ watch([() => paginationData.currentPage, () => paginationData.pageSize], getTabl
               </el-space>
             </template>
             <div class="text item">
-              {{ i.intro }}
+              {{ i.intro || "这个人很懒，什么也没留下~" }}
             </div>
-            <template #footer>
-              <el-button plain @click="getTeacherDetail">看TA</el-button>
+            <template #footer="">
+              <el-button plain @click="handleUpdate(i)">看TA</el-button>
             </template>
           </el-card>
         </el-space>
@@ -242,50 +246,27 @@ watch([() => paginationData.currentPage, () => paginationData.pageSize], getTabl
       </div>
     </el-card>
     <!-- 新增/修改 -->
-    <el-dialog
-      v-model="dialogVisible"
-      :title="formData.id === undefined ? '新增用户' : '修改用户'"
-      @closed="resetForm"
-      width="30%"
-    >
-      <el-form ref="formRef" :model="formData" :rules="formRules" label-width="100px" label-position="left">
-        <el-form-item prop="id" label="用户ID">
-          <el-input v-model="formData.id" disabled placeholder="自动生成，不用输入" />
+    <el-dialog v-model="dialogVisible" title="向TA预约" @closed="resetForm" width="30%">
+      <el-form ref="formRef" :model="formData" :rules="formRules" label-width="150px" label-position="left">
+        <el-form-item prop="nickname" label="教师名称">
+          <el-tag type="info">{{ formData.nickname }}</el-tag>
         </el-form-item>
-        <el-form-item prop="username" label="账号">
-          <el-input v-model="formData.username" :disabled="!!formData.id" placeholder="请输入" />
+        <el-form-item prop="sex" label="性别">
+          <el-tag type="info">{{ formatSex(formData.sex) }}</el-tag>
         </el-form-item>
-        <el-form-item v-if="!formData.id" prop="password" label="密码">
-          <el-input maxlength="14" show-word-limit type="password" v-model="formData.password" placeholder="请输入" />
-        </el-form-item>
-        <el-form-item prop="nickname" label="昵称">
-          <el-input v-model="formData.nickname" placeholder="请输入" />
-        </el-form-item>
-        <el-form-item prop="type" label="角色">
-          <template #default>
-            <el-select :disabled="!!formData.id" v-model="formData.type" placeholder="请选择" style="width: 240px">
-              <el-option v-for="item in userTypes" :key="item.value" :label="item.label" :value="item.value" />
-            </el-select>
-          </template>
-        </el-form-item>
-        <el-form-item prop="teacherOffice" label="办公地点">
-          <el-cascader
-            :disabled="formData.type !== 'TEACHER'"
-            v-model="formData.officeIds"
-            :options="classrooms"
-            :props="{ expandTrigger: 'hover' as const }"
-            @change="onRoomSelected"
-          />
-        </el-form-item>
-        <el-form-item prop="phone" label="手机号">
-          <el-input v-model="formData.phone" placeholder="请输入" />
+        <el-form-item prop="officeIds" label="办公地点">
+          <el-tag type="info">{{ formData.officeNames?.join("") }}</el-tag>
         </el-form-item>
         <el-form-item prop="phone" label="简介">
-          <el-input
-            :autosize="{ minRows: 3, maxRows: 5 }"
-            type="textarea"
-            v-model="formData.intro"
-            placeholder="请输入"
+          <el-text class="mx-1">{{ formData.intro || "这个人很懒，什么也没留下~" }}</el-text>
+        </el-form-item>
+        <el-form-item prop="times" label="选择时间">
+          <el-date-picker
+            v-model="formData.times"
+            type="datetimerange"
+            range-separator="To"
+            start-placeholder="开始时间"
+            end-placeholder="结束时间"
           />
         </el-form-item>
       </el-form>

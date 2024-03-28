@@ -12,6 +12,7 @@ export interface CreateOrUpdateTableRequestData extends User {
     capacity: number
   }>
   sex?: "MAN" | "WOMAN" | ""
+  times: [Date, Date]
 }
 
 export interface GetTableRequestData {
