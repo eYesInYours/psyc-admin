@@ -52,7 +52,7 @@ const resetForm = () => {
 
 //#region 删
 const handleDelete = (row: GetTableData) => {
-  ElMessageBox.confirm(`正在删除用户：${row.username}，确认删除？`, "提示", {
+  ElMessageBox.confirm(`正在删除订单：${row.username}，确认删除？`, "提示", {
     confirmButtonText: "确定",
     cancelButtonText: "取消",
     type: "warning"
@@ -154,11 +154,19 @@ watch([() => paginationData.currentPage, () => paginationData.pageSize], getTabl
       <div class="table-wrapper">
         <el-table :data="tableData">
           <el-table-column type="selection" width="50" align="center" />
-          <el-table-column prop="id" label="教室ID" align="center" />
-          <el-table-column prop="location" label="位置" align="center" />
-          <el-table-column prop="capacity" label="容纳人数" align="center" />
-          <el-table-column prop="createTime" label="创建时间" align="center" />
-          <el-table-column prop="updateTime" label="更新时间" align="center" />
+          <el-table-column prop="_id" label="订单ID" align="center" />
+          <el-table-column prop="teacherDTO" label="位置" align="center">
+            <template #default="scope">
+              <el-tag>{{ scope.row.teacherDTO.officeNames.join("") }}</el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column prop="teacherDTO.officeCapacity" label="容纳人数" align="center" />
+          <el-table-column prop="studentDTO.nickname" label="预约者" align="center" />
+          <el-table-column prop="teacherDTO.nickname" label="受预约者" align="center" />
+          <el-table-column prop="times[0]" label="活动开始时间" align="center" />
+          <el-table-column prop="times[1]" label="活动结束时间" align="center" />
+          <el-table-column prop="createTime" label="订单创建时间" align="center" />
+          <el-table-column prop="updateTime" label="订单更新时间" align="center" />
           <el-table-column fixed="right" label="操作" width="150" align="center">
             <template #default="scope">
               <el-button type="primary" text bg size="small" @click="handleUpdate(scope.row)">修改</el-button>
