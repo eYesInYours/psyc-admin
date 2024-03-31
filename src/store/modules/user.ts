@@ -9,6 +9,7 @@ import { loginApi, getUserInfoApi } from "@/api/login"
 import { type LoginRequestData } from "@/api/login/types/login"
 import { type User } from "@/api/user/types/user"
 import routeSettings from "@/config/route"
+import { ElNotification } from "element-plus"
 
 export const useUserStore = defineStore("user", () => {
   const token = ref<string>(getToken() || "")
@@ -17,7 +18,7 @@ export const useUserStore = defineStore("user", () => {
   const user = ref<User>({
     id: 0,
     username: "",
-    type: "STUDENT",
+    type: "",
     phone: "",
     intro: "",
     createTime: "",
@@ -25,25 +26,49 @@ export const useUserStore = defineStore("user", () => {
     avatar: "",
     roles: [""] // 权限
   })
+  const loginType = ref<string>()
 
   const tagsViewStore = useTagsViewStore()
   const settingsStore = useSettingsStore()
 
   /** 登录 */
   const login = async ({ username, password, type }: LoginRequestData) => {
+    loginType.value = type
     const { data } = await loginApi({ username, password, type })
-    console.log("user token", data.token)
     setToken(data.token)
     token.value = data.token
     user.value = data.user
+    console.log("user token", data.token, user.value)
   }
   /** 获取用户详情 */
   const getInfo = async () => {
     const { data } = await getUserInfoApi(token.value)
     username.value = data.username
     // 验证返回的 roles 是否为一个非空数组，否则塞入一个没有任何作用的默认角色，防止路由守卫逻辑进入无限循环
-    console.log("data", data.roles)
+    console.log("data", data)
+    user.value = data
     roles.value = data.roles?.length > 0 ? data.roles : routeSettings.defaultRoles
+
+    let title = ""
+    switch (data.type) {
+      case "TEACHER":
+        title = `教师【${data.username}】，欢迎登录。`
+        break
+      case "STUDENT":
+        title = `学生【${data.username}】，欢迎登录。`
+        break
+      case "ADMIN":
+        title = "欢迎登录，您是超级管理员，有权进行任意管理操作。"
+    }
+    console.log(title)
+    ElNotification({
+      title: "Hello",
+      type: "success",
+      dangerouslyUseHTMLString: true,
+      message: title,
+      duration: 0,
+      position: "bottom-right"
+    })
   }
   /** 模拟角色变化 */
   const changeRoles = async (role: string) => {
@@ -75,7 +100,7 @@ export const useUserStore = defineStore("user", () => {
     }
   }
 
-  return { token, roles, username, login, getInfo, changeRoles, logout, resetToken }
+  return { token, roles, username, login, getInfo, changeRoles, logout, resetToken, user, loginType }
 })
 
 /** 在 setup 外使用 */

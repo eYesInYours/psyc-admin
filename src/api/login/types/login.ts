@@ -8,7 +8,7 @@ export interface LoginRequestData {
   /** 验证码 */
   // code: string,
   /* 登陆类型 */
-  type: "STUDENT" | "TEACHER" | "ADMIN"
+  type: "STUDENT" | "TEACHER" | "ADMIN" | "" | undefined
 }
 
 export type LoginCodeResponseData = ApiResponseData<string>
@@ -18,4 +18,4 @@ export type LoginResponseData = ApiResponseData<{
   user: User
 }>
 
-export type UserInfoResponseData = ApiResponseData<{ username: string; roles: string[] }>
+export type UserInfoResponseData = ApiResponseData<{ username: string; roles: string[]; type: string }>

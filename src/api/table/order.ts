@@ -10,18 +10,33 @@ export function createTableDataApi(data: Table.CreateOrUpdateTableRequestData) {
   })
 }
 
+export function agreeOrRejectApi(data: Table.CreateOrUpdateTableRequestData) {
+  return request({
+    url: "/order/agreeOrReject",
+    method: "post",
+    data
+  })
+}
+
 /** 删 */
 export function deleteTableDataApi(id: string) {
   return request({
-    url: `/classroom/del/${id}`,
+    url: `/order/del/${id}`,
     method: "delete"
+  })
+}
+
+export function cancelApi(id: string) {
+  return request({
+    url: `/order/cancel/${id}`,
+    method: "put"
   })
 }
 
 /** 改 */
 export function updateTableDataApi(data: Table.CreateOrUpdateTableRequestData) {
   return request({
-    url: "/classroom/update",
+    url: "/order/update",
     method: "put",
     data
   })

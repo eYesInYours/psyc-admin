@@ -2,7 +2,7 @@ export interface User {
   id: number | string | undefined
   username: string
   nickname?: string
-  type: "STUDENT" | "TEACHER" | "ADMIN" | undefined
+  type: "STUDENT" | "TEACHER" | "ADMIN" | ""
   phone?: String
   intro?: String
   createTime?: String

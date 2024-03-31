@@ -14,6 +14,7 @@ import Screenfull from "@/components/Screenfull/index.vue"
 import SearchMenu from "@/components/SearchMenu/index.vue"
 import { useDevice } from "@/hooks/useDevice"
 import { useLayoutMode } from "@/hooks/useLayoutMode"
+import { computed } from "vue"
 
 const { isMobile } = useDevice()
 const { isTop } = useLayoutMode()
@@ -30,7 +31,9 @@ const toggleSidebar = () => {
 
 /* 修改个人信息 */
 const updateUserInfo = () => {
-  router.push("/userUpdater")
+  router.replace({
+    name: "userInfo"
+  })
 }
 
 /** 登出 */
@@ -38,6 +41,11 @@ const logout = () => {
   userStore.logout()
   router.push("/login")
 }
+
+const avatar = computed(() => {
+  console.log(userStore.user.avatar)
+  return userStore.user.avatar
+})
 </script>
 
 <template>
@@ -51,13 +59,13 @@ const logout = () => {
     <Breadcrumb v-if="!isTop || isMobile" class="breadcrumb" />
     <Sidebar v-if="isTop && !isMobile" class="sidebar" />
     <div class="right-menu">
-      <SearchMenu v-if="showSearchMenu" class="right-menu-item" />
+      <!--      <SearchMenu v-if="showSearchMenu" class="right-menu-item" />-->
       <Screenfull v-if="showScreenfull" class="right-menu-item" />
       <ThemeSwitch v-if="showThemeSwitch" class="right-menu-item" />
-      <Notify v-if="showNotify" class="right-menu-item" />
+      <!--      <Notify v-if="showNotify" class="right-menu-item" />-->
       <el-dropdown class="right-menu-item">
         <div class="right-menu-avatar">
-          <el-avatar :icon="UserFilled" :size="30" />
+          <el-avatar :src="avatar" :size="30" />
           <span>{{ userStore.username }}</span>
         </div>
         <template #dropdown>

@@ -67,6 +67,23 @@ export const constantRoutes: RouteRecordRaw[] = [
         }
       }
     ]
+  },
+  {
+    path: "/setting",
+    component: Layouts,
+    redirect: "/userInfo",
+    children: [
+      {
+        path: "userInfo",
+        component: () => import("@/views/setting/userInfo.vue"),
+        name: "userInfo",
+        meta: {
+          title: "用户信息",
+          svgIcon: "dashboard",
+          affix: true
+        }
+      }
+    ]
   }
   // {
   //   path: "/unocss",
@@ -284,7 +301,7 @@ export const dynamicRoutes: RouteRecordRaw[] = [
     meta: {
       title: "预约模块",
       svgIcon: "lock",
-      roles: ["ADMIN", "TEACHER", "STUDENT"], // 可以在根路由中设置角色
+      roles: ["STUDENT"], // 可以在根路由中设置角色
       alwaysShow: true // 将始终显示根菜单
     },
     children: [

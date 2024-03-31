@@ -13,6 +13,9 @@ export interface CreateOrUpdateTableRequestData extends User {
   }>
   sex?: "MAN" | "WOMAN" | ""
   times: [Date, Date]
+  _id: string | number | undefined
+  teacherDTO: {}
+  studentDTO: {}
 }
 
 export interface GetTableRequestData {

@@ -25,3 +25,12 @@ export function getUserInfoApi(userId: string | number) {
     method: "get"
   })
 }
+
+/*修改用户*/
+export function updaterUserInfoApi(rest: any) {
+  return request({
+    url: "/user/update",
+    method: "post",
+    data: rest
+  })
+}

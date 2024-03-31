@@ -1,12 +1,17 @@
 <script lang="ts" setup>
-import { reactive, ref, watch } from "vue"
+import { reactive, ref, watch, computed } from "vue"
 import { createTableDataApi, deleteTableDataApi, updateTableDataApi, getTableDataApi } from "@/api/table"
 import { searchTableDataApi } from "@/api/table/classroom"
 import { type CreateOrUpdateTableRequestData, type GetTableData } from "@/api/table/types/table"
-import { type FormInstance, type FormRules, ElMessage, ElMessageBox } from "element-plus"
+import { type FormInstance, type FormRules, ElMessage, ElMessageBox, UploadProps } from "element-plus"
 import { Search, Refresh, CirclePlus, Delete, Download, RefreshRight } from "@element-plus/icons-vue"
 import { usePagination } from "@/hooks/usePagination"
 import { cloneDeep } from "lodash-es"
+
+import type { UploadInstance } from "element-plus"
+import { useUserStore } from "@/store/modules/user"
+import { uplaodApi } from "@/api/util"
+const uploadRef = ref<UploadInstance>()
 
 defineOptions({
   // 命名当前组件
@@ -24,7 +29,9 @@ const DEFAULT_FORM_DATA: CreateOrUpdateTableRequestData = {
   type: undefined,
   phone: "",
   intro: "",
-  sex: ""
+  sex: "",
+  avatarFileList: [],
+  avatar: ""
 }
 const dialogVisible = ref<boolean>(false)
 const formRef = ref<FormInstance | null>(null)
@@ -33,6 +40,9 @@ const formRules: FormRules<CreateOrUpdateTableRequestData> = {
   username: [{ required: true, trigger: "blur", message: "请输入账号" }],
   password: [{ required: true, trigger: "blur", message: "请输入密码" }]
 }
+
+const onUpload = async () => {}
+
 const handleCreateOrUpdate = () => {
   formRef.value?.validate((valid: boolean, fields) => {
     if (!valid) return console.error("表单校验不通过", fields)
@@ -45,15 +55,44 @@ const handleCreateOrUpdate = () => {
       console.log(parent, child)
       formData.value.officeNames = [parent?.label || "", child?.label || ""]
     }
-    api(formData.value)
-      .then(() => {
-        ElMessage.success("操作成功")
-        dialogVisible.value = false
-        getTableData()
-      })
-      .finally(() => {
-        loading.value = false
-      })
+
+    // onUpload()
+    // if(formData.value.avatarFileList?.length){
+    //   const {data} =  await uplaodApi(formData.value.avatarFileList[0])
+    //   formData.value.avatar = data
+    // }
+
+    if (formData.value.avatarFileList?.length) {
+      uplaodApi(formData.value.avatarFileList[0])
+        .then((img) => {
+          console.log(img)
+          return api({
+            ...formData.value,
+            avatar: img.data
+          })
+        })
+        .then(() => {
+          ElMessage.success("操作成功")
+          dialogVisible.value = false
+          getTableData()
+        })
+        .catch((error) => {
+          console.error("操作失败", error)
+        })
+        .finally(() => {
+          loading.value = false
+        })
+    } else {
+      api(formData.value)
+        .then(() => {
+          ElMessage.success("操作成功")
+          dialogVisible.value = false
+          getTableData()
+        })
+        .finally(() => {
+          loading.value = false
+        })
+    }
   })
 }
 const resetForm = () => {
@@ -173,6 +212,43 @@ remoteMethod("")
 
 /** 监听分页参数的变化 */
 watch([() => paginationData.currentPage, () => paginationData.pageSize], getTableData, { immediate: true })
+
+const userStore = useUserStore()
+
+const user = ref({})
+const avatarTempUrl = computed(() => {
+  const avatarFileList = formData.value?.avatarFileList
+  if (avatarFileList?.length) {
+    if (avatarFileList[0].raw) {
+      return URL.createObjectURL(formData.value.avatarFileList?.[0].raw)
+    } else {
+      return URL.createObjectURL(formData.value.avatarFileList[0])
+    }
+  }
+  return ""
+})
+
+const beforeAvatarUpload: UploadProps["beforeUpload"] = (rawFile) => {
+  console.log(rawFile)
+  if (rawFile.type !== "image/jpeg") {
+    ElMessage.error("Avatar picture must be JPG format!")
+    return false
+  } else if (rawFile.size / 1024 / 1024 > 10) {
+    ElMessage.error("头像文件不能超过10M")
+    return false
+  }
+  return true
+}
+
+const handleExceed: UploadProps["onExceed"] = (files) => {
+  console.log("files", files[0])
+  formData.value.avatarFileList[0] = {
+    name: files[0].name,
+    percentage: files[0].percentage,
+    size: files[0].size,
+    raw: files[0]
+  }
+}
 </script>
 
 <template>
@@ -215,6 +291,11 @@ watch([() => paginationData.currentPage, () => paginationData.pageSize], getTabl
         <el-table :data="tableData">
           <el-table-column type="selection" width="50" align="center" />
           <el-table-column prop="id" label="用户ID" align="center" />
+          <el-table-column prop="avatar" label="用户头像" align="center">
+            <template #default="scope">
+              <el-avatar :size="50" :src="scope.row?.avatar" />
+            </template>
+          </el-table-column>
           <el-table-column prop="username" label="账号" align="center" />
           <el-table-column prop="nickname" label="昵称" align="center" />
           <el-table-column prop="sex" label="性别">
@@ -270,6 +351,33 @@ watch([() => paginationData.currentPage, () => paginationData.pageSize], getTabl
       <el-form ref="formRef" :model="formData" :rules="formRules" label-width="100px" label-position="left">
         <el-form-item prop="id" label="用户ID">
           <el-input v-model="formData.id" disabled placeholder="自动生成，不用输入" />
+        </el-form-item>
+        <el-form-item prop="avatar" label="用户头像">
+          <el-upload
+            ref="uploadRef"
+            class="avatar-uploader"
+            action="https://run.mocky.io/v3/9d059bf9-4660-45f2-925d-ce80ad6c4d15"
+            :limit="1"
+            :auto-upload="false"
+            :before-upload="beforeAvatarUpload"
+            v-model:file-list="formData.avatarFileList"
+            :show-file-list="false"
+            :on-exceed="handleExceed"
+          >
+            <el-image
+              v-if="formData.avatarFileList?.length"
+              style="width: 100px; height: 100px"
+              :src="avatarTempUrl"
+              fit="cover"
+            />
+            <el-image
+              v-else-if="formData.avatar"
+              style="width: 100px; height: 100px"
+              :src="formData.avatar"
+              fit="cover"
+            />
+            <!--            <el-icon class="avatar-uploader-icon"><Plus /></el-icon>-->
+          </el-upload>
         </el-form-item>
         <el-form-item prop="username" label="账号">
           <el-input v-model="formData.username" :disabled="!!formData.id" placeholder="请输入" />

@@ -214,7 +214,7 @@ watch([() => paginationData.currentPage, () => paginationData.pageSize], getTabl
           <el-card v-for="i in tableData" :key="i.id" class="box-card" style="width: 310px">
             <template #header>
               <el-space wrap>
-                <el-avatar size="small" src="https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png" />
+                <el-avatar size="small" :src="i.avatar" />
                 <el-space direction="vertical" alignment="flex-start">
                   <el-text class="mx-1" type="info">{{ i.nickname }}</el-text>
                   <el-text class="mx-1" type="info" size="small"
@@ -248,6 +248,9 @@ watch([() => paginationData.currentPage, () => paginationData.pageSize], getTabl
     <!-- 新增/修改 -->
     <el-dialog v-model="dialogVisible" title="向TA预约" @closed="resetForm" width="30%">
       <el-form ref="formRef" :model="formData" :rules="formRules" label-width="150px" label-position="left">
+        <el-form-item prop="avatar" label="头像">
+          <el-image style="width: 100px; height: 100px" :src="formData.avatar" fit="cover" />
+        </el-form-item>
         <el-form-item prop="nickname" label="教师名称">
           <el-tag type="info">{{ formData.nickname }}</el-tag>
         </el-form-item>
