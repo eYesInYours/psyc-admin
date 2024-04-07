@@ -290,6 +290,16 @@ export const dynamicRoutes: RouteRecordRaw[] = [
           keepAlive: true,
           roles: ["ADMIN", "TEACHER", "STUDENT"]
         }
+      },
+      {
+        path: "comment",
+        component: () => import("@/views/table/comment-manage/index.vue"),
+        name: "comment",
+        meta: {
+          title: "评价管理",
+          keepAlive: true,
+          roles: ["ADMIN", "TEACHER", "STUDENT"]
+        }
       }
     ]
   },

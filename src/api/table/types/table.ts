@@ -16,6 +16,9 @@ export interface CreateOrUpdateTableRequestData extends User {
   _id: string | number | undefined
   teacherDTO: {}
   studentDTO: {}
+  status: ""
+  rate: number
+  content: string
 }
 
 export interface GetTableRequestData {

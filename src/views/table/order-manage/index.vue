@@ -8,6 +8,7 @@ import {
   cancelApi,
   agreeOrRejectApi
 } from "@/api/table/order"
+import { createCommentTableDataApi, deleteCommentTableDataApi, getCommentTableDataApi } from "@/api/table/comment"
 import { type CreateOrUpdateTableRequestData, type GetTableData } from "@/api/table/types/table"
 import { type FormInstance, type FormRules, ElMessage, ElMessageBox } from "element-plus"
 import { Search, Refresh, CirclePlus, Delete, Download, RefreshRight } from "@element-plus/icons-vue"
@@ -16,7 +17,7 @@ import { cloneDeep } from "lodash-es"
 
 defineOptions({
   // 命名当前组件
-  name: "UserManage"
+  name: "CommentManage"
 })
 
 const loading = ref<boolean>(false)
@@ -31,11 +32,12 @@ const DEFAULT_FORM_DATA: CreateOrUpdateTableRequestData = {
   officeNames: [],
   officeCapacity: "",
   studentDTO: {},
-  teacherDTO: {}
+  teacherDTO: {},
+  status: "" as any
 }
 const dialogVisible = ref<boolean>(false)
-const formRef = ref<FormInstance | null>(null)
 const formData = ref<CreateOrUpdateTableRequestData>(cloneDeep(DEFAULT_FORM_DATA))
+const formRef = ref<FormInstance | null>(null)
 const formRules: FormRules<CreateOrUpdateTableRequestData> = {
   location: [{ required: true, trigger: "blur", message: "请输入教室地点" }],
   capacity: [{ required: true, trigger: "blur", message: "请输入教室容量" }]
@@ -175,6 +177,50 @@ const resetSearch = () => {
 }
 //#endregion
 
+//#region 评价
+const commentInfo: any = ref({})
+const commentVisible = ref(false)
+
+const commentFormRef = ref<FormInstance | null>(null)
+const commentFormRules: FormRules<CreateOrUpdateTableRequestData> = {
+  rate: [{ required: true, trigger: "blur", message: "请给本次预约打分" }],
+  content: [{ required: true, trigger: "blur", message: "请输入评价内容" }]
+}
+const handleComment = (row: GetTableData) => {
+  commentInfo.value = {
+    ...row,
+    rate: "",
+    content: "",
+    createTime: undefined,
+    updateTime: undefined
+  }
+  commentVisible.value = true
+}
+
+const createComment = () => {
+  commentFormRef.value?.validate((valid: boolean, fields) => {
+    if (!valid) return console.error("表单校验不通过", fields)
+    loading.value = true
+    const api = createCommentTableDataApi
+    console.log(valid)
+    api(formData.value)
+      .then(() => {
+        ElMessage.success("操作成功")
+        commentVisible.value = false
+        getTableData()
+      })
+      .finally(() => {
+        loading.value = false
+      })
+  })
+}
+
+const resetCommentInfo = () => {
+  commentFormRef.value?.resetFields()
+  commentInfo.value = {}
+}
+//#endregion
+
 /** 监听分页参数的变化 */
 watch([() => paginationData.currentPage, () => paginationData.pageSize], getTableData, { immediate: true })
 </script>
@@ -256,6 +302,16 @@ watch([() => paginationData.currentPage, () => paginationData.pageSize], getTabl
                 >删除</el-button
               >
               <el-button
+                v-permission="['STUDENT']"
+                v-if="scope.row.status == 'FINISHED'"
+                type="danger"
+                text
+                bg
+                size="small"
+                @click="handleComment(scope.row)"
+                >评价</el-button
+              >
+              <el-button
                 v-permission="['TEACHER']"
                 type="primary"
                 text
@@ -274,7 +330,7 @@ watch([() => paginationData.currentPage, () => paginationData.pageSize], getTabl
                 >拒绝</el-button
               >
               <el-button
-                v-if="scope.row.status != 'CANCELED'"
+                v-if="scope.row.status == 'APPLYING'"
                 v-permission="['STUDENT']"
                 type="danger"
                 text
@@ -371,6 +427,50 @@ watch([() => paginationData.currentPage, () => paginationData.pageSize], getTabl
       <template #footer>
         <el-button @click="dialogVisible = false">取消</el-button>
         <el-button type="primary" @click="handleCreateOrUpdate" :loading="loading">确认</el-button>
+      </template>
+    </el-dialog>
+
+    <el-dialog v-model="commentVisible" title="评价本次预约" @closed="resetCommentInfo" width="30%">
+      <el-form
+        ref="commentFormRef"
+        :model="commentInfo"
+        :rules="commentFormRules"
+        label-width="140px"
+        label-position="left"
+      >
+        <el-form-item prop="id" label="订单ID">
+          <el-input v-model="commentInfo._id" disabled />
+        </el-form-item>
+        <el-form-item prop="teacherDTO" label="评价对象（教师）">
+          <el-space>
+            <el-avatar :size="40" :src="commentInfo?.teacherDTO?.avatar" />
+            <el-text>{{ commentInfo?.teacherDTO?.nickname }}</el-text>
+          </el-space>
+        </el-form-item>
+        <el-form-item prop="studentDTO" label="评价者（学生）">
+          <el-space>
+            <el-avatar :size="40" :src="commentInfo?.studentDTO?.avatar" />
+            <el-text>{{ commentInfo?.studentDTO?.nickname }}</el-text>
+          </el-space>
+        </el-form-item>
+        <el-form-item prop="rate" label="评分">
+          <el-rate v-model="commentInfo.rate" allow-half />
+        </el-form-item>
+        <el-form-item prop="content" label="评价">
+          <el-input
+            maxlength="500"
+            :show-word-limit="true"
+            v-model="commentInfo.content"
+            style="width: 240px"
+            autosize
+            type="textarea"
+            placeholder="快给本次预约写下你的体验评价吧！"
+          />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="commentVisible = false">取消</el-button>
+        <el-button type="primary" @click="createComment" :loading="loading">确认</el-button>
       </template>
     </el-dialog>
   </div>
