@@ -8,7 +8,12 @@ import {
   cancelApi,
   agreeOrRejectApi
 } from "@/api/table/order"
-import { createCommentTableDataApi, deleteCommentTableDataApi, getCommentTableDataApi } from "@/api/table/comment"
+import {
+  createCommentTableDataApi,
+  deleteCommentTableDataApi,
+  getCommentTableDataApi,
+  getCommentDetailApi
+} from "@/api/table/comment"
 import { type CreateOrUpdateTableRequestData, type GetTableData } from "@/api/table/types/table"
 import { type FormInstance, type FormRules, ElMessage, ElMessageBox } from "element-plus"
 import { Search, Refresh, CirclePlus, Delete, Download, RefreshRight } from "@element-plus/icons-vue"
@@ -201,9 +206,10 @@ const createComment = () => {
   commentFormRef.value?.validate((valid: boolean, fields) => {
     if (!valid) return console.error("表单校验不通过", fields)
     loading.value = true
+    console.log(fields)
     const api = createCommentTableDataApi
     console.log(valid)
-    api(formData.value)
+    api(commentInfo.value)
       .then(() => {
         ElMessage.success("操作成功")
         commentVisible.value = false
@@ -213,6 +219,19 @@ const createComment = () => {
         loading.value = false
       })
   })
+}
+
+/* 查看评论 */
+const isEdit = ref(true)
+const viewComment = async (row: any) => {
+  console.log(row)
+  const res = await getCommentDetailApi({
+    orderId: row.id
+  })
+  commentInfo.value = res.data
+  console.log(res)
+  commentVisible.value = true
+  isEdit.value = false
 }
 
 const resetCommentInfo = () => {
@@ -269,6 +288,7 @@ watch([() => paginationData.currentPage, () => paginationData.pageSize], getTabl
               <el-tag v-if="scope.row.status == 'REJECT'" type="danger">拒绝预约</el-tag>
               <el-tag v-if="scope.row.status == 'UNDERWAY'" type="info">进行中</el-tag>
               <el-tag v-if="scope.row.status == 'FINISHED'" type="danger">已结束</el-tag>
+              <el-tag v-if="scope.row.status == 'RATED'" type="danger">已评价</el-tag>
               <el-tag v-if="scope.row.status == 'CANCELED'" type="danger">已取消</el-tag>
             </template>
           </el-table-column>
@@ -313,6 +333,7 @@ watch([() => paginationData.currentPage, () => paginationData.pageSize], getTabl
               >
               <el-button
                 v-permission="['TEACHER']"
+                v-if="scope.row.status == 'APPLYING'"
                 type="primary"
                 text
                 bg
@@ -322,6 +343,7 @@ watch([() => paginationData.currentPage, () => paginationData.pageSize], getTabl
               >
               <el-button
                 v-permission="['TEACHER']"
+                v-if="scope.row.status == 'APPLYING'"
                 type="danger"
                 text
                 bg
@@ -338,6 +360,9 @@ watch([() => paginationData.currentPage, () => paginationData.pageSize], getTabl
                 size="small"
                 @click="cancelOrder(scope.row)"
                 >取消</el-button
+              >
+              <el-button v-if="scope.row.status == 'RATED'" text bg size="small" @click="viewComment(scope.row)"
+                >查看评论</el-button
               >
             </template>
           </el-table-column>
@@ -369,6 +394,7 @@ watch([() => paginationData.currentPage, () => paginationData.pageSize], getTabl
             <el-tag v-if="formData.status == 'REJECT'" type="danger">拒绝预约</el-tag>
             <el-tag v-if="formData.status == 'UNDERWAY'" type="info">进行中</el-tag>
             <el-tag v-if="formData.status == 'FINISHED'" type="danger">已结束</el-tag>
+            <el-tag v-if="formData.status == 'RATED'" type="danger">已评价</el-tag>
             <el-tag v-if="formData.status == 'CANCELED'" type="danger">已取消</el-tag>
           </template>
         </el-form-item>
@@ -437,6 +463,7 @@ watch([() => paginationData.currentPage, () => paginationData.pageSize], getTabl
         :rules="commentFormRules"
         label-width="140px"
         label-position="left"
+        v-if="commentInfo?.id"
       >
         <el-form-item prop="id" label="订单ID">
           <el-input v-model="commentInfo._id" disabled />
@@ -454,7 +481,7 @@ watch([() => paginationData.currentPage, () => paginationData.pageSize], getTabl
           </el-space>
         </el-form-item>
         <el-form-item prop="rate" label="评分">
-          <el-rate v-model="commentInfo.rate" allow-half />
+          <el-rate v-model="commentInfo.rate" :disabled="!isEdit" allow-half />
         </el-form-item>
         <el-form-item prop="content" label="评价">
           <el-input
@@ -464,13 +491,20 @@ watch([() => paginationData.currentPage, () => paginationData.pageSize], getTabl
             style="width: 240px"
             autosize
             type="textarea"
+            :disabled="!isEdit"
             placeholder="快给本次预约写下你的体验评价吧！"
           />
         </el-form-item>
       </el-form>
-      <template #footer>
+
+      <el-empty v-else description="评论已被删除" />
+
+      <template #footer v-if="isEdit">
         <el-button @click="commentVisible = false">取消</el-button>
         <el-button type="primary" @click="createComment" :loading="loading">确认</el-button>
+      </template>
+      <template #footer v-else>
+        <el-button @click="commentVisible = false">关闭</el-button>
       </template>
     </el-dialog>
   </div>

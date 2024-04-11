@@ -53,7 +53,6 @@ const updateUserInfo = async () => {
   try {
     loading.value = true
     // uploadRef.value!.submit()
-    c
     await updaterUserInfoApi(user.value)
     await getUserInfo()
   } catch (e) {

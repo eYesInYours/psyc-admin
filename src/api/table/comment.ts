@@ -10,6 +10,15 @@ export function createCommentTableDataApi(data: Table.CreateOrUpdateTableRequest
   })
 }
 
+/** 改 */
+export function updateCommentTableDataApi(data: Table.CreateOrUpdateTableRequestData) {
+  return request({
+    url: "/comment/update",
+    method: "put",
+    data
+  })
+}
+
 /** 删 */
 export function deleteCommentTableDataApi(_id: string) {
   return request({
@@ -22,6 +31,15 @@ export function deleteCommentTableDataApi(_id: string) {
 export function getCommentTableDataApi(params: Table.GetTableRequestData) {
   return request<Table.GetTableResponseData>({
     url: "/comment/list",
+    method: "get",
+    params
+  })
+}
+
+/* 详情 */
+export function getCommentDetailApi(params: any) {
+  return request<Table.GetTableResponseData>({
+    url: "/comment/detail",
     method: "get",
     params
   })
