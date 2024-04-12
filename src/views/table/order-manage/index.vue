@@ -152,15 +152,16 @@ const userTypes = [
   }
 ]
 const searchData = reactive({
-  location: "",
-  teacherNickname: ""
+  teacherNickname: "",
+  studentNickname: ""
 })
 const getTableData = () => {
   loading.value = true
   getTableDataApi({
     pageNum: paginationData.currentPage,
     pageSize: paginationData.pageSize,
-    teacherNickname: searchData.teacherNickname || undefined
+    teacherNickname: searchData.teacherNickname || undefined,
+    studentNickname: searchData.studentNickname || undefined
   })
     .then(({ data }) => {
       paginationData.total = data.total
@@ -248,8 +249,11 @@ watch([() => paginationData.currentPage, () => paginationData.pageSize], getTabl
   <div class="app-container">
     <el-card v-loading="loading" shadow="never" class="search-wrapper">
       <el-form ref="searchFormRef" :inline="true" :model="searchData">
-        <el-form-item prop="location" label="教师昵称">
-          <el-input v-model="searchData.teacherNickname" placeholder="请输入" />
+        <el-form-item v-permission="['STUDENT', 'ADMIN']" prop="teacherNickname" label="老师昵称">
+          <el-input v-model="searchData.teacherNickname" placeholder="请输入（可模糊搜索）" />
+        </el-form-item>
+        <el-form-item v-permission="['TEACHER', 'ADMIN']" prop="studentNickname" label="学生昵称">
+          <el-input v-model="searchData.studentNickname" placeholder="请输入（可模糊搜索）" />
         </el-form-item>
         <el-form-item>
           <el-button type="primary" :icon="Search" @click="handleSearch">查询</el-button>

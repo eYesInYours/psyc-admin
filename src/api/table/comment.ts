@@ -28,7 +28,7 @@ export function deleteCommentTableDataApi(_id: string) {
 }
 
 /** 查 */
-export function getCommentTableDataApi(params: Table.GetTableRequestData) {
+export function getCommentTableDataApi(params: any) {
   return request<Table.GetTableResponseData>({
     url: "/comment/list",
     method: "get",

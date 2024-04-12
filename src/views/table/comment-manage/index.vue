@@ -10,6 +10,9 @@ import { Search, Refresh, CirclePlus, Delete, Download, RefreshRight } from "@el
 import { usePagination } from "@/hooks/usePagination"
 import { cloneDeep } from "lodash-es"
 
+import { useUserStore } from "@/store/modules/user"
+const userStore = useUserStore()
+
 defineOptions({
   // 命名当前组件
   name: "UserManage"
@@ -93,18 +96,16 @@ const userTypes = [
   }
 ]
 const searchData = reactive({
-  username: "",
-  phone: "",
-  type: ""
+  teacherNickname: "",
+  studentNickname: ""
 })
 const getTableData = () => {
   loading.value = true
   getCommentTableDataApi({
     pageNum: paginationData.currentPage,
     pageSize: paginationData.pageSize,
-    username: searchData.username || undefined
-    // phone: searchData.phone || undefined,
-    // type: searchData.type || undefined
+    teacherNickname: searchData.teacherNickname || undefined,
+    studentNickname: searchData.teacherNickname || undefined
   })
     .then(({ data }) => {
       paginationData.total = data.total
@@ -123,6 +124,8 @@ const handleSearch = () => {
 }
 const resetSearch = () => {
   searchFormRef.value?.resetFields()
+  searchData.studentNickname = ""
+  searchData.teacherNickname = ""
   handleSearch()
 }
 
@@ -235,8 +238,11 @@ const resetCommentInfo = () => {
   <div class="app-container">
     <el-card v-loading="loading" shadow="never" class="search-wrapper">
       <el-form ref="searchFormRef" :inline="true" :model="searchData">
-        <el-form-item prop="username" label="老师名字">
-          <el-input v-model="searchData.username" placeholder="请输入（可模糊搜索）" />
+        <el-form-item v-permission="['STUDENT', 'ADMIN']" prop="username" label="老师昵称">
+          <el-input v-model="searchData.teacherNickname" placeholder="请输入（可模糊搜索）" />
+        </el-form-item>
+        <el-form-item v-permission="['TEACHER', 'ADMIN']" prop="username" label="学生昵称">
+          <el-input v-model="searchData.studentNickname" placeholder="请输入（可模糊搜索）" />
         </el-form-item>
         <el-form-item>
           <el-button type="primary" :icon="Search" @click="handleSearch">查询</el-button>
@@ -296,7 +302,8 @@ const resetCommentInfo = () => {
             </el-space>
             <template #footer>
               <el-popover :visible="visible" placement="top" :width="160">
-                <p>删除后不能再评价哦，你确定要删除吗？</p>
+                <p v-if="userStore.user.type == 'STUDENT'">删除后不能再评价哦，你确定要删除吗？</p>
+                <p v-else>删除就找不回了，真的要这样吗？</p>
                 <div style="text-align: right; margin: 0">
                   <el-button size="small" text @click="visible = false">取消</el-button>
                   <el-button size="small" type="danger" @click="handleDelete(i)">删除</el-button>
