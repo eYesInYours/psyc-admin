@@ -31,9 +31,18 @@ const dialogVisible = ref<boolean>(false)
 const formRef = ref<FormInstance | null>(null)
 const formData = ref<CreateOrUpdateTableRequestData>(cloneDeep(DEFAULT_FORM_DATA))
 const formRules: FormRules<CreateOrUpdateTableRequestData> = {
-  username: [{ required: true, trigger: "blur", message: "请输入账号" }],
-  password: [{ required: true, trigger: "blur", message: "请输入密码" }]
+  times: [{ required: true, trigger: "blur", message: "请选择时间" }]
 }
+
+// 默认日历开始时间
+const defaultTime: [Date, Date] = [new Date(), new Date()]
+
+// 判断日期是否合法
+const disabledDate = (date: Date) => {
+  const now = new Date()
+  return date < now
+}
+
 const handleCreateOrUpdate = () => {
   formRef.value?.validate((valid: boolean, fields) => {
     if (!valid) return console.error("表单校验不通过", fields)
@@ -270,6 +279,8 @@ watch([() => paginationData.currentPage, () => paginationData.pageSize], getTabl
             range-separator="To"
             start-placeholder="开始时间"
             end-placeholder="结束时间"
+            :defaultTime="defaultTime"
+            :disabled-date="disabledDate"
           />
         </el-form-item>
       </el-form>

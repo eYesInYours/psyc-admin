@@ -53,6 +53,10 @@ const updateUserInfo = async () => {
   try {
     loading.value = true
     // uploadRef.value!.submit()
+    if (user.value.avatarFileList.length) {
+      const { data } = await uplaodApi(user.value.avatarFileList[0])
+      user.value.avatar = data
+    }
     await updaterUserInfoApi(user.value)
     await getUserInfo()
   } catch (e) {
@@ -118,7 +122,6 @@ const handleExceed: UploadProps["onExceed"] = (files) => {
           <el-upload
             ref="uploadRef"
             class="avatar-uploader"
-            action="https://run.mocky.io/v3/9d059bf9-4660-45f2-925d-ce80ad6c4d15"
             :limit="1"
             :auto-upload="false"
             :before-upload="beforeAvatarUpload"
